@@ -14,7 +14,8 @@
 }
 
 .page-template .site-content {
-    padding-block: 0;
+    padding-top: 0;
+    padding-bottom: max(8vmin, 6rem);
 }
 
 .gh-foot {
