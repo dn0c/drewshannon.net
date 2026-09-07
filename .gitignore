@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Production builds and release archives
+dist/
+assets/built/*.map
+
+# OS & Editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Antigravity / Gemini artifacts
+.gemini/

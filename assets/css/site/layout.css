@@ -1,0 +1,32 @@
+.site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.site-content {
+    flex-grow: 1;
+    padding: 6vmin 0;
+}
+
+.is-head-brand .site-content {
+    padding-top: max(8vmin, 5rem);
+}
+
+.page-template .site-content {
+    padding-block: 0;
+}
+
+.gh-foot {
+    border-top: 1px solid var(--light-gray-color);
+    background-color: var(--color-white);
+}
+
+.gh-foot a {
+    color: var(--secondary-text-color);
+    transition: color 0.15s ease;
+}
+
+.gh-foot a:hover {
+    color: var(--brand-color);
+}
