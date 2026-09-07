@@ -8,8 +8,20 @@
 }
 
 .gh-head-logo {
-    font-size: 2.2rem;
+    font-size: 2.6rem;
     font-weight: 800;
+}
+
+.gh-head-logo img {
+    max-height: 56px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 767px) {
+    .gh-head-logo img {
+        max-height: 44px;
+    }
 }
 
 .gh-head-menu,
