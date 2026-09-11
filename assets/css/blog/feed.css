@@ -113,7 +113,8 @@
     margin-left: 2.5rem;
 }
 
-.post-feed:not(.expanded) .feed-image {
+.post-feed:not(.expanded) .feed-image,
+.feed.no-image .feed-image {
     display: none;
 }
 
