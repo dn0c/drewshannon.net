@@ -26,8 +26,21 @@
 
 .gh-head-menu,
 .gh-head-actions {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.gh-head .nav {
+    gap: 3.8rem;
+}
+
+.gh-head-members {
+    gap: 24px;
+}
+
+.gh-head-btn.gh-btn {
+    font-weight: 500;
 }
 
 @media (min-width: 992px) {
