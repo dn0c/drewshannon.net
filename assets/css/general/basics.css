@@ -100,8 +100,55 @@ body.has-serif-body {
     margin-bottom: 1.5em;
 }
 
-.gh-content blockquote {
+.gh-content blockquote:not(.kg-blockquote-alt) {
     border-left-color: var(--brand-color);
+}
+
+.gh-content blockquote.kg-blockquote-alt {
+    border-left: none;
+    padding: 2.4rem 0;
+    margin: 3.6rem auto;
+    max-width: 680px;
+    text-align: center;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    line-height: 1.55;
+    font-style: italic;
+    color: var(--color-primary-text);
+}
+
+.gh-content blockquote.kg-blockquote-alt p {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    font-style: inherit;
+    color: inherit;
+    margin-bottom: 0;
+}
+
+.gh-content blockquote.kg-blockquote-alt p + p {
+    margin-top: 1em;
+}
+
+.gh-content blockquote.kg-blockquote-alt cite {
+    display: block;
+    margin-top: 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-secondary-text);
+    font-style: normal;
+}
+
+@media (max-width: 767px) {
+    .gh-content blockquote.kg-blockquote-alt {
+        font-size: 1.9rem;
+        padding: 2rem 0;
+        margin: 2.8rem auto;
+    }
 }
 
 .gh-content code:not(pre code) {
