@@ -8,9 +8,19 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap"></noscript>
 
     <link rel="stylesheet" href="{{asset "built/screen.css"}}">
+
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
 
     {{ghost_head}}
 </head>
@@ -31,6 +41,10 @@
                     </a>
                 </div>
                 <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
+                <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
+                    <span class="theme-icon-light">{{> "icons/sun"}}</span>
+                    <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                </button>
                 <button class="gh-burger" aria-label="{{t "Toggle menu"}}"></button>
             </div>
 
@@ -39,6 +53,10 @@
                 {{#unless @site.members_enabled}}
                     {{#match @custom.navigation_layout "Stacked"}}
                         <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
+                        <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
+                            <span class="theme-icon-light">{{> "icons/sun"}}</span>
+                            <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                        </button>
                     {{/match}}
                 {{/unless}}
             </nav>
@@ -47,9 +65,17 @@
                 {{#unless @site.members_enabled}}
                     {{^match @custom.navigation_layout "Stacked"}}
                         <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
+                        <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
+                            <span class="theme-icon-light">{{> "icons/sun"}}</span>
+                            <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                        </button>
                     {{/match}}
                 {{else}}
                     <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
+                    <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
+                        <span class="theme-icon-light">{{> "icons/sun"}}</span>
+                        <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                    </button>
                     <div class="gh-head-members">
                         {{#unless @member}}
                             {{#unless @site.members_invite_only}}
@@ -113,7 +139,7 @@
 {{/is}}
 
 
-<script src="{{asset "built/main.min.js"}}"></script>
+<script defer src="{{asset "built/main.min.js"}}"></script>
 
 {{ghost_foot}}
 

@@ -58,11 +58,106 @@
     --header-spacing: 6vmin;
 }
 
+/* Dark Mode: Warm archival espresso theme */
+[data-theme="dark"] {
+    --bg-color: #1a1614;
+    --ink: #f3ede4;
+    --ink-soft: rgba(243, 237, 228, 0.68);
+    --ink-faint: rgba(243, 237, 228, 0.28);
+    --rule: rgba(243, 237, 228, 0.14);
+    --rule-dashed: rgba(243, 237, 228, 0.28);
+
+    --primary-text-color: #f3ede4;
+    --secondary-text-color: rgba(243, 237, 228, 0.68);
+    --white-color: #1a1614;
+    --lighter-gray-color: #26201c;
+    --light-gray-color: rgba(243, 237, 228, 0.14);
+    --mid-gray-color: rgba(243, 237, 228, 0.3);
+    --dark-gray-color: rgba(243, 237, 228, 0.75);
+    --darker-gray-color: #f3ede4;
+    --black-color: #f3ede4;
+
+    --color-primary-text: #f3ede4;
+    --color-secondary-text: rgba(243, 237, 228, 0.68);
+    --color-white: #1a1614;
+    --color-lighter-gray: #26201c;
+    --color-light-gray: rgba(243, 237, 228, 0.14);
+    --color-mid-gray: rgba(243, 237, 228, 0.3);
+    --color-dark-gray: rgba(243, 237, 228, 0.75);
+    --color-darker-gray: #f3ede4;
+    --color-black: #f3ede4;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-color: #1a1614;
+        --ink: #f3ede4;
+        --ink-soft: rgba(243, 237, 228, 0.68);
+        --ink-faint: rgba(243, 237, 228, 0.28);
+        --rule: rgba(243, 237, 228, 0.14);
+        --rule-dashed: rgba(243, 237, 228, 0.28);
+
+        --primary-text-color: #f3ede4;
+        --secondary-text-color: rgba(243, 237, 228, 0.68);
+        --white-color: #1a1614;
+        --lighter-gray-color: #26201c;
+        --light-gray-color: rgba(243, 237, 228, 0.14);
+        --mid-gray-color: rgba(243, 237, 228, 0.3);
+        --dark-gray-color: rgba(243, 237, 228, 0.75);
+        --darker-gray-color: #f3ede4;
+        --black-color: #f3ede4;
+
+        --color-primary-text: #f3ede4;
+        --color-secondary-text: rgba(243, 237, 228, 0.68);
+        --color-white: #1a1614;
+        --color-lighter-gray: #26201c;
+        --color-light-gray: rgba(243, 237, 228, 0.14);
+        --color-mid-gray: rgba(243, 237, 228, 0.3);
+        --color-dark-gray: rgba(243, 237, 228, 0.75);
+        --color-darker-gray: #f3ede4;
+        --color-black: #f3ede4;
+    }
+}
+
+/* Theme toggle button & icon switching */
+.gh-theme-toggle {
+    margin-left: 0.8rem;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.gh-theme-toggle:hover {
+    opacity: 0.8;
+}
+
+.theme-icon-dark {
+    display: none;
+}
+.theme-icon-light {
+    display: inline-flex;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+    display: inline-flex;
+}
+[data-theme="dark"] .theme-icon-light {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-icon-dark {
+        display: inline-flex;
+    }
+    :root:not([data-theme="light"]) .theme-icon-light {
+        display: none;
+    }
+}
+
 body {
     background-color: var(--color-white);
     color: var(--color-primary-text);
     font-family: var(--gh-font-body, var(--font-sans));
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .has-serif-body,
