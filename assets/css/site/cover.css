@@ -6,11 +6,13 @@ body:not(.with-full-cover) .cover {
     position: relative;
     display: flex;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
 .with-full-cover .cover.half {
     height: 60vh;
+    height: 60dvh;
 }
 
 .with-full-cover .cover::before {

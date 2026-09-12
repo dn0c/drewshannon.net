@@ -1,6 +1,6 @@
 <div class="cover{{#if @site.cover_image}} image-loading{{/if}}{{#match @custom.publication_cover_style "Half screen"}} half{{/match}} gh-outer">
     {{#if @site.cover_image}}
-        <img class="cover-image u-object-fit" src="{{@site.cover_image}}" alt="{{@site.title}}">
+        <img class="cover-image u-object-fit" src="{{@site.cover_image}}" alt="{{@site.title}}" fetchpriority="high" decoding="async">
     {{/if}}
 
     <div class="cover-content">
