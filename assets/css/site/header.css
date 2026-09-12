@@ -49,3 +49,78 @@
         margin: 0;
     }
 }
+
+.gh-head .nav a {
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.gh-head .nav a:hover {
+    opacity: 0.8;
+}
+
+/* Header elements on transparent & brand headers (Hero cover & inner pages) */
+.is-head-transparent .gh-head .nav a,
+.is-head-transparent .gh-head-logo,
+.is-head-transparent .gh-head-logo a,
+.is-head-transparent .gh-search,
+.is-head-transparent .gh-theme-toggle,
+.is-head-brand:not(.is-head-transparent) .gh-head .nav a,
+.is-head-brand:not(.is-head-transparent) .gh-head-logo,
+.is-head-brand:not(.is-head-transparent) .gh-head-logo a,
+.is-head-brand:not(.is-head-transparent) .gh-search,
+.is-head-brand:not(.is-head-transparent) .gh-theme-toggle {
+    color: #fbf7f0 !important;
+}
+
+.is-head-transparent .gh-burger::before,
+.is-head-transparent .gh-burger::after,
+.is-head-brand:not(.is-head-transparent) .gh-burger::before,
+.is-head-brand:not(.is-head-transparent) .gh-burger::after {
+    background-color: #fbf7f0 !important;
+}
+
+/* Dark Mode: Keep primary navigation buttons ("About", "Now", "Home"), logo, search, and toggle white or cream */
+[data-theme="dark"] .gh-head .nav a,
+[data-theme="dark"] .gh-head-logo,
+[data-theme="dark"] .gh-head-logo a,
+[data-theme="dark"] .gh-search,
+[data-theme="dark"] .gh-theme-toggle {
+    color: #fbf7f0 !important;
+}
+
+[data-theme="dark"] .gh-burger::before,
+[data-theme="dark"] .gh-burger::after {
+    background-color: #fbf7f0 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .gh-head .nav a,
+    :root:not([data-theme="light"]) .gh-head-logo,
+    :root:not([data-theme="light"]) .gh-head-logo a,
+    :root:not([data-theme="light"]) .gh-search,
+    :root:not([data-theme="light"]) .gh-theme-toggle {
+        color: #fbf7f0 !important;
+    }
+
+    :root:not([data-theme="light"]) .gh-burger::before,
+    :root:not([data-theme="light"]) .gh-burger::after {
+        background-color: #fbf7f0 !important;
+    }
+}
+
+/* Mobile opened menu in dark mode */
+@media (max-width: 767px) {
+    [data-theme="dark"] .is-head-open #gh-head .nav a,
+    [data-theme="dark"] .is-head-open #gh-head .gh-head-btn,
+    [data-theme="dark"] .is-head-open #gh-head .gh-head-link {
+        color: #fbf7f0 !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .is-head-open #gh-head .nav a,
+        :root:not([data-theme="light"]) .is-head-open #gh-head .gh-head-btn,
+        :root:not([data-theme="light"]) .is-head-open #gh-head .gh-head-link {
+            color: #fbf7f0 !important;
+        }
+    }
+}
