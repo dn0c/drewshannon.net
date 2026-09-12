@@ -125,6 +125,23 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
+.gh-head-brand .gh-theme-toggle {
+    margin-right: 8px;
+    margin-left: 0;
+}
+
+@media (max-width: 767px) {
+    .gh-head-actions .gh-theme-toggle {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .gh-head-brand .gh-theme-toggle {
+        display: none;
+    }
+}
+
 .gh-theme-toggle:hover {
     opacity: 0.8;
 }
