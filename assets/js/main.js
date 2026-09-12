@@ -84,7 +84,7 @@ function themeToggle() {
     buttons.forEach(function (btn) {
         btn.addEventListener('click', function () {
             var currentTheme = document.documentElement.getAttribute('data-theme');
-            var isDark = currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var isDark = currentTheme === 'dark';
             var newTheme = isDark ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);

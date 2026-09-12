@@ -93,34 +93,11 @@
     background-color: #fbf7f0 !important;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .gh-head .nav a,
-    :root:not([data-theme="light"]) .gh-head-logo,
-    :root:not([data-theme="light"]) .gh-head-logo a,
-    :root:not([data-theme="light"]) .gh-search,
-    :root:not([data-theme="light"]) .gh-theme-toggle {
-        color: #fbf7f0 !important;
-    }
-
-    :root:not([data-theme="light"]) .gh-burger::before,
-    :root:not([data-theme="light"]) .gh-burger::after {
-        background-color: #fbf7f0 !important;
-    }
-}
-
 /* Mobile opened menu in dark mode */
 @media (max-width: 767px) {
     [data-theme="dark"] .is-head-open #gh-head .nav a,
     [data-theme="dark"] .is-head-open #gh-head .gh-head-btn,
     [data-theme="dark"] .is-head-open #gh-head .gh-head-link {
         color: #fbf7f0 !important;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) .is-head-open #gh-head .nav a,
-        :root:not([data-theme="light"]) .is-head-open #gh-head .gh-head-btn,
-        :root:not([data-theme="light"]) .is-head-open #gh-head .gh-head-link {
-            color: #fbf7f0 !important;
-        }
     }
 }

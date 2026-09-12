@@ -16,7 +16,7 @@
     <script>
         (function() {
             var theme = localStorage.getItem('theme');
-            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (theme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
         })();
@@ -42,8 +42,8 @@
                 </div>
                 <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
                 <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
-                    <span class="theme-icon-light">{{> "icons/sun"}}</span>
-                    <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                    <span class="theme-icon-light">{{> "icons/moon"}}</span>
+                    <span class="theme-icon-dark">{{> "icons/sun"}}</span>
                 </button>
                 <button class="gh-burger" aria-label="{{t "Toggle menu"}}"></button>
             </div>
@@ -54,8 +54,8 @@
                     {{#match @custom.navigation_layout "Stacked"}}
                         <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
                         <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
-                            <span class="theme-icon-light">{{> "icons/sun"}}</span>
-                            <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                            <span class="theme-icon-light">{{> "icons/moon"}}</span>
+                            <span class="theme-icon-dark">{{> "icons/sun"}}</span>
                         </button>
                     {{/match}}
                 {{/unless}}
@@ -66,15 +66,15 @@
                     {{^match @custom.navigation_layout "Stacked"}}
                         <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
                         <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
-                            <span class="theme-icon-light">{{> "icons/sun"}}</span>
-                            <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                            <span class="theme-icon-light">{{> "icons/moon"}}</span>
+                            <span class="theme-icon-dark">{{> "icons/sun"}}</span>
                         </button>
                     {{/match}}
                 {{else}}
                     <button class="gh-search gh-icon-btn" aria-label="{{t "Search this site"}}" data-ghost-search>{{> "icons/search"}}</button>
                     <button class="gh-theme-toggle gh-icon-btn" aria-label="Toggle theme">
-                        <span class="theme-icon-light">{{> "icons/sun"}}</span>
-                        <span class="theme-icon-dark">{{> "icons/moon"}}</span>
+                        <span class="theme-icon-light">{{> "icons/moon"}}</span>
+                        <span class="theme-icon-dark">{{> "icons/sun"}}</span>
                     </button>
                     <div class="gh-head-members">
                         {{#unless @member}}
