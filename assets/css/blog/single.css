@@ -76,6 +76,54 @@
     letter-spacing: -0.02rem;
 }
 
+.single-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 4.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--light-gray-color);
+}
+
+.single-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.single-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+    color: var(--secondary-text-color);
+    background-color: var(--lighter-gray-color);
+    border: 1px solid var(--light-gray-color);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.single-tag:hover {
+    color: var(--primary-text-color);
+    border-color: var(--brand-color);
+    opacity: 1;
+}
+
+[data-theme="dark"] .single-tag:hover {
+    color: #fbf7f0;
+    border-color: rgba(243, 237, 228, 0.4);
+}
+
+.single-tags + .single-footer {
+    margin-top: 3.5rem;
+}
+
 .single-footer {
     display: flex;
     align-items: center;
