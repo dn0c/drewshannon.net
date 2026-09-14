@@ -1,0 +1,71 @@
+{{!< default}}
+
+<main class="site-main">
+
+    {{#post}}
+        <article class="single {{post_class}}">
+            <header class="single-header gh-canvas">
+                <h1 class="single-title">{{title}}</h1>
+                {{#if custom_excerpt}}
+                    <div class="single-excerpt">{{custom_excerpt}}</div>
+                {{/if}}
+            </header>
+
+            {{#if content}}
+                <div class="single-content gh-content gh-canvas">
+                    {{content}}
+                </div>
+            {{/if}}
+        </article>
+    {{/post}}
+
+    <div class="topics-container gh-canvas">
+
+        {{!-- Section 1: Writing, Newsletters & Curated Ideas --}}
+        <section class="topics-section">
+            <div class="topics-section-header">
+                <h2 class="topics-section-title">Writing, Newsletters & Curated Ideas</h2>
+                <span class="topics-section-count">8 Topics</span>
+            </div>
+            {{#get "tags" limit="50" include="count.posts" filter="slug:[modest-operations,writing,this-week,link,q-a,newsletter,notes,music]" order="count.posts desc"}}
+                <div class="topics-grid">
+                    {{#foreach tags}}
+                        {{> "topic-card"}}
+                    {{/foreach}}
+                </div>
+            {{/get}}
+        </section>
+
+        {{!-- Section 2: Photography, Places & Themes --}}
+        <section class="topics-section">
+            <div class="topics-section-header">
+                <h2 class="topics-section-title">Photography, Places & Visual Themes</h2>
+                <span class="topics-section-count">14 Topics</span>
+            </div>
+            {{#get "tags" limit="50" include="count.posts" filter="slug:[photo,photo-of-the-day,nyc,california,black-and-white,cars,ocean,michigan,video,sunset,signs,detroit,desert,architecture]" order="count.posts desc"}}
+                <div class="topics-grid">
+                    {{#foreach tags}}
+                        {{> "topic-card"}}
+                    {{/foreach}}
+                </div>
+            {{/get}}
+        </section>
+
+        {{!-- Section 3: Cameras & Analog Medium --}}
+        <section class="topics-section">
+            <div class="topics-section-header">
+                <h2 class="topics-section-title">Cameras & Analog Medium</h2>
+                <span class="topics-section-count">6 Topics</span>
+            </div>
+            {{#get "tags" limit="50" include="count.posts" filter="slug:[fujifilm-x100,canon-rebel-xsi,canon-5d-mark-ii,film,minolta-maxxum-5,leica-m240]" order="count.posts desc"}}
+                <div class="topics-grid">
+                    {{#foreach tags}}
+                        {{> "topic-card"}}
+                    {{/foreach}}
+                </div>
+            {{/get}}
+        </section>
+
+    </div>
+
+</main>

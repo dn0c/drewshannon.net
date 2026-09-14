@@ -24,3 +24,4 @@ pnpm-debug.log*
 
 # Antigravity / Gemini artifacts
 .gemini/
+logos/
