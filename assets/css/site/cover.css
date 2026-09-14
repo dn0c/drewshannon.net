@@ -11,8 +11,8 @@ body:not(.with-full-cover) .cover {
 }
 
 .with-full-cover .cover.half {
-    height: 60vh;
-    height: 60dvh;
+    height: 40vh;
+    height: 40dvh;
 }
 
 .with-full-cover .cover::before {
@@ -99,7 +99,7 @@ body:not(.with-full-cover) .cover {
 
 .cover-arrow {
     position: absolute;
-    bottom: 40px;
+    bottom: 20px;
     left: 50%;
     z-index: 10;
     display: none;
