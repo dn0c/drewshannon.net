@@ -7,12 +7,15 @@ body:not(.with-full-cover) .cover {
     display: flex;
     height: 100vh;
     height: 100dvh;
+    padding-top: 100px;
+    padding-bottom: 40px;
     overflow: hidden;
 }
 
 .with-full-cover .cover.half {
     height: 40vh;
     height: 40dvh;
+    min-height: 420px;
 }
 
 .with-full-cover .cover::before {
@@ -119,6 +122,15 @@ body:not(.with-full-cover) .cover {
 }
 
 @media (max-width: 767px) {
+    .with-full-cover .cover {
+        padding-top: 64px;
+        padding-bottom: 24px;
+    }
+
+    .with-full-cover .cover.half {
+        min-height: 350px;
+    }
+
     .cover-description {
         font-size: 2.7rem;
     }
