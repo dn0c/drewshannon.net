@@ -21,15 +21,34 @@
 
     <div class="topics-container gh-canvas">
 
+        {{!-- Section 1: Featured Topics (Tags with descriptions) --}}
         <section class="topics-section">
             {{#get "tags" limit="100" include="count.posts" filter="description:-null" order="count.posts desc"}}
                 <div class="topics-section-header">
-                    <h2 class="topics-section-title">All Topics</h2>
+                    <h2 class="topics-section-title">Featured Topics</h2>
                     <span class="topics-section-count">{{plural pagination.total empty=(t "0 Topics") singular=(t "1 Topic") plural=(t "% Topics")}}</span>
                 </div>
                 <div class="topics-grid">
                     {{#foreach tags}}
                         {{> "topic-card"}}
+                    {{/foreach}}
+                </div>
+            {{/get}}
+        </section>
+
+        {{!-- Section 2: Remaining Topics --}}
+        <section class="topics-section">
+            {{#get "tags" limit="all" include="count.posts" filter="description:null" order="count.posts desc"}}
+                <div class="topics-section-header">
+                    <h2 class="topics-section-title">More Topics</h2>
+                    <span class="topics-section-count">{{plural pagination.total empty=(t "0 Topics") singular=(t "1 Topic") plural=(t "% Topics")}}</span>
+                </div>
+                <div class="topics-tags-cloud">
+                    {{#foreach tags}}
+                        <a class="topic-tag-pill" href="{{url}}">
+                            <span class="topic-tag-name">{{name}}</span>
+                            <span class="topic-tag-count">({{count.posts}})</span>
+                        </a>
                     {{/foreach}}
                 </div>
             {{/get}}
