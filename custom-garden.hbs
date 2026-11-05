@@ -1065,7 +1065,7 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 `;
             } else {
-                const targetLink = atom.source_url || atom.canonical_url;
+                const targetLink = atom.source_url;
                 bodyHtml = `
                     <div class="cur-card-body">
                         <div class="cur-card-title">
@@ -1080,7 +1080,7 @@ html[data-theme="dark"] .markdown-body code {
             // Tags & Actions
             const tagsHtml = (atom.tags || []).slice(0, 3).map(t => `<span class="cur-tag">#${t}</span>`).join('');
             let actionHtml = '';
-            const visitUrl = atom.source_url || atom.canonical_url;
+            const visitUrl = atom.source_url;
             if (atom.kind === 'video') {
                 actionHtml = `<button class="cur-read-btn" style="background:#6B46C1;" onclick="openCurVideo('${atom.id}')">▶ Play</button>`;
             } else if (atom.kind === 'article' || atom.kind === 'note') {
@@ -1132,7 +1132,7 @@ html[data-theme="dark"] .markdown-body code {
     function getVideoEmbedUrl(atom, autoplay = false) {
         const raw = atom.raw || {};
         const video = (raw.payload && raw.payload.video) || {};
-        let url = video.embed_url || atom.source_url || (prov && prov.canonical_url) || '';
+        let url = video.embed_url || atom.source_url || '';
         if (!url) return null;
 
         let embed = null;
@@ -1194,7 +1194,7 @@ html[data-theme="dark"] .markdown-body code {
         kindEl.textContent = atom.kind.toUpperCase();
         document.getElementById('curMetaId').textContent = atom.id;
 
-        const targetUrl = atom.source_url || prov.canonical_url || prov.source_url;
+        const targetUrl = atom.source_url || (prov && prov.source_url);
         let siteName = atom.site_name || prov.site_name || '';
         if (!siteName && targetUrl) {
             try {
@@ -1276,7 +1276,6 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Favicon</span>${favDisplay}</div>
                 <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
                 <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
-                <div class="cur-schema-row"><span>Canonical URL</span>${formatSchemaVal(prov.canonical_url, false, true)}</div>
                 <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
             </div>
 
