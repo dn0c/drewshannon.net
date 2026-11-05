@@ -74,7 +74,7 @@
     </dialog>
 
     <!-- Metadata Inspector Modal -->
-    <dialog id="curMetaModal" class="cur-dialog" style="max-width: 820px; width: 92%;">
+    <dialog id="curMetaModal" class="cur-dialog" style="max-width: 860px; width: 92%;">
         <div class="cur-dialog-header">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span id="curMetaKind" class="cur-kind-pill"></span>
@@ -511,8 +511,8 @@ html[data-theme="dark"] .cur-dialog {
 }
 
 .cur-dialog::backdrop {
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
 }
 
 .cur-dialog-header {
@@ -643,72 +643,67 @@ html[data-theme="dark"] .cur-modal-title {
     margin-bottom: 24px;
 }
 
-.cur-modal-quote-wrap {
-    border-left: 3px solid var(--color-primary-text, #111);
-    background: rgba(0,0,0,0.02);
-    padding: 16px 20px;
-    border-radius: 0 8px 8px 0;
-    margin-bottom: 18px;
+.cur-quote-hero {
+    border-left: 4px solid var(--color-primary-text, #111);
+    background: rgba(0,0,0,0.025);
+    padding: 22px 26px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 22px;
 }
 
-html[data-theme="dark"] .cur-modal-quote-wrap {
+html[data-theme="dark"] .cur-quote-hero {
     border-left-color: #fbf7f0;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.035);
 }
 
-.cur-modal-quote-text {
+.cur-quote-hero .cur-modal-quote-text {
     font-family: 'Newsreader', Georgia, serif;
-    font-size: 20px;
+    font-size: 24px;
     font-style: italic;
-    line-height: 1.6;
-    margin: 0 0 10px 0;
+    line-height: 1.55;
+    margin: 0 0 14px 0;
     color: var(--color-primary-text, #111);
 }
 
-html[data-theme="dark"] .cur-modal-quote-text {
+html[data-theme="dark"] .cur-quote-hero .cur-modal-quote-text {
     color: #fbf7f0;
 }
 
-.cur-modal-quote-author {
-    font-size: 13.5px;
+.cur-quote-hero .cur-modal-quote-author {
+    font-size: 14.5px;
     font-weight: 600;
-    color: var(--color-secondary-text, #666);
+    color: var(--color-secondary-text, #555);
 }
 
-html[data-theme="dark"] .cur-modal-quote-author {
-    color: #aaa;
+html[data-theme="dark"] .cur-quote-hero .cur-modal-quote-author {
+    color: #ccc;
 }
 
-.cur-modal-cover-wrap {
-    margin-bottom: 20px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: rgba(0,0,0,0.03);
-    max-height: 420px;
+.cur-author-source {
+    font-weight: 400;
+    color: var(--color-secondary-text, #777);
+    margin-left: 6px;
 }
 
-.cur-modal-cover-img {
-    width: 100%;
-    max-height: 420px;
-    object-fit: cover;
-    display: block;
-}
-
-.cur-modal-image-wrap {
+.cur-image-hero {
     text-align: center;
-    margin-bottom: 20px;
-    background: rgba(0,0,0,0.02);
+    background: #0d0d0c;
     border-radius: 10px;
-    padding: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.cur-modal-main-img {
+.cur-lightbox-img {
     max-width: 100%;
-    max-height: 540px;
+    max-height: 68vh;
     object-fit: contain;
-    border-radius: 8px;
-    display: inline-block;
-    vertical-align: middle;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.45);
 }
 
 .cur-modal-video-wrap {
@@ -1195,113 +1190,6 @@ html[data-theme="dark"] .markdown-body code {
 
         const fullContent = atom.content || atom.excerpt || '';
 
-        // Generate kind-specific full content
-        let contentHtml = '';
-        if (atom.kind === 'quote') {
-            const quoteText = fullContent || atom.title;
-            contentHtml = `
-                <div class="cur-modal-quote-wrap">
-                    <blockquote class="cur-modal-quote-text">“${escapeHtml(quoteText)}”</blockquote>
-                    ${atom.author ? `<div class="cur-modal-quote-author">— ${escapeHtml(atom.author)}</div>` : ''}
-                </div>
-                ${targetUrl ? `<div class="cur-modal-actions"><a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ View Source Article</a></div>` : ''}
-            `;
-        } else if (atom.kind === 'video') {
-            const embedUrl = getVideoEmbedUrl(atom, autoplayVideo);
-            contentHtml = `
-                ${embedUrl ? `
-                    <div class="cur-modal-video-wrap">
-                        <iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
-                ` : (atom.cover_url ? `
-                    <div class="cur-modal-cover-wrap">
-                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img">
-                    </div>
-                ` : '')}
-                ${targetUrl ? `
-                    <div class="cur-modal-actions">
-                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn" style="background:#6B46C1;">▶ Watch on ${escapeHtml(siteName || 'Video Platform')} ↗</a>
-                    </div>
-                ` : ''}
-                ${fullContent ? `
-                    <div class="cur-modal-transcript-wrap">
-                        <div class="cur-modal-transcript-heading">Transcript / Dialogue</div>
-                        <div class="cur-modal-transcript-body">${escapeHtml(fullContent)}</div>
-                    </div>
-                ` : ''}
-            `;
-        } else if (atom.kind === 'article') {
-            contentHtml = `
-                ${atom.cover_url ? `
-                    <div class="cur-modal-cover-wrap">
-                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img" loading="lazy">
-                    </div>
-                ` : ''}
-                ${targetUrl ? `
-                    <div class="cur-modal-actions">
-                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ Read on ${escapeHtml(siteName || 'Publisher')}</a>
-                    </div>
-                ` : ''}
-                ${fullContent ? `
-                    <div class="cur-modal-article-text markdown-body">
-                        ${renderContentMarkdown(fullContent)}
-                    </div>
-                ` : ''}
-            `;
-        } else if (atom.kind === 'note') {
-            contentHtml = `
-                <div class="cur-modal-note-text markdown-body">
-                    ${renderContentMarkdown(fullContent || atom.notes || '')}
-                </div>
-            `;
-        } else if (atom.kind === 'image') {
-            let paletteDots = '';
-            if (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) {
-                paletteDots = `<div style="display:flex; gap:6px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">` +
-                    atom.metadata.color_palette.map(c => `<span style="display:inline-flex; align-items:center; gap:4px; font-family:'JetBrains Mono', monospace; font-size:11px;"><span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
-                    `</div>`;
-            }
-            contentHtml = `
-                ${atom.cover_url ? `
-                    <div class="cur-modal-image-wrap">
-                        <a href="${atom.cover_url}" target="_blank" rel="noopener" title="View full resolution image">
-                            <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-main-img">
-                        </a>
-                    </div>
-                ` : ''}
-                ${paletteDots}
-                ${fullContent ? `
-                    <div class="markdown-body" style="margin-bottom:14px;">
-                        ${renderContentMarkdown(fullContent)}
-                    </div>
-                ` : ''}
-                ${targetUrl ? `
-                    <div class="cur-modal-actions">
-                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ Open Source</a>
-                    </div>
-                ` : ''}
-            `;
-        } else {
-            // Bookmark / File / Generic fallback
-            contentHtml = `
-                ${atom.cover_url ? `
-                    <div class="cur-modal-cover-wrap">
-                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img" loading="lazy">
-                    </div>
-                ` : ''}
-                ${targetUrl ? `
-                    <div class="cur-modal-actions">
-                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ Visit Link</a>
-                    </div>
-                ` : ''}
-                ${fullContent ? `
-                    <div class="markdown-body" style="margin-bottom:14px;">
-                        ${renderContentMarkdown(fullContent)}
-                    </div>
-                ` : ''}
-            `;
-        }
-
         // Curator notes (if present and distinct from fullContent)
         let curatorNotesHtml = '';
         if (atom.notes && atom.notes.trim() !== (fullContent || '').trim()) {
@@ -1316,18 +1204,7 @@ html[data-theme="dark"] .markdown-body code {
         const collectionsList = atom.collections || cur.collections || [];
         const collectionsStr = collectionsList.length ? collectionsList.join(', ') : 'Inbox';
 
-        const body = document.getElementById('curMetaBody');
-        body.innerHTML = `
-            <h2 class="cur-modal-title">${escapeHtml(atom.title || 'Untitled')}</h2>
-            ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
-
-            <!-- FULL CONTENT (ABOVE METADATA) -->
-            <div class="cur-modal-content-section">
-                ${contentHtml}
-                ${curatorNotesHtml}
-            </div>
-
-            <!-- METADATA DIVIDER -->
+        const metaCardsHtml = `
             <div class="cur-modal-meta-divider">
                 <span class="cur-modal-meta-label">Atom Metadata &amp; Provenance</span>
             </div>
@@ -1353,6 +1230,187 @@ html[data-theme="dark"] .markdown-body code {
                 ${atom.notes ? `<div style="margin-top:10px; font-size:13px; color:var(--color-secondary-text, #666);">${escapeHtml(atom.notes)}</div>` : ''}
             </div>
         `;
+
+        let bodyHtml = '';
+
+        if (atom.kind === 'quote') {
+            const quoteText = fullContent || atom.title;
+            bodyHtml = `
+                <!-- FULL QUOTE AT THE TOP -->
+                <div class="cur-quote-hero">
+                    <div class="cur-modal-quote-text">“${escapeHtml(quoteText).replace(/\n/g, '<br>')}”</div>
+                    ${atom.author ? `
+                        <div class="cur-modal-quote-author">
+                            — <strong>${escapeHtml(atom.author)}</strong>
+                            ${siteName ? `<span class="cur-author-source">via ${escapeHtml(siteName)}</span>` : ''}
+                        </div>
+                    ` : ''}
+                    ${targetUrl ? `
+                        <div class="cur-modal-actions" style="margin-top:16px; margin-bottom:0;">
+                            <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ View Source Article</a>
+                        </div>
+                    ` : ''}
+                </div>
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        } else if (atom.kind === 'image') {
+            let paletteDots = '';
+            if (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) {
+                paletteDots = `<div style="display:flex; gap:6px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">` +
+                    atom.metadata.color_palette.map(c => `<span style="display:inline-flex; align-items:center; gap:4px; font-family:'JetBrains Mono', monospace; font-size:11px;"><span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
+                    `</div>`;
+            }
+            bodyHtml = `
+                <!-- FULL IMAGE AT THE TOP -->
+                ${atom.cover_url ? `
+                    <div class="cur-image-hero">
+                        <a href="${atom.cover_url}" target="_blank" rel="noopener" title="Open full resolution in new tab">
+                            <img src="${atom.cover_url}" alt="${escapeHtml(atom.title || 'Image asset')}" class="cur-lightbox-img" loading="eager">
+                        </a>
+                    </div>
+                ` : ''}
+
+                ${paletteDots}
+
+                ${(atom.title && !atom.title.startsWith('atm_') && !/^[0-9a-f_-]{10,}$/i.test(atom.title)) ? `
+                    <h2 class="cur-modal-title" style="font-size:22px; margin-bottom:6px;">${escapeHtml(atom.title)}</h2>
+                ` : ''}
+
+                ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
+
+                ${fullContent ? `
+                    <div class="markdown-body" style="margin-bottom:16px;">
+                        ${renderContentMarkdown(fullContent)}
+                    </div>
+                ` : ''}
+
+                ${targetUrl ? `
+                    <div class="cur-modal-actions">
+                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ View Source Image</a>
+                    </div>
+                ` : ''}
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        } else if (atom.kind === 'video') {
+            const embedUrl = getVideoEmbedUrl(atom, autoplayVideo);
+            bodyHtml = `
+                <!-- FULL VIDEO AT THE TOP -->
+                ${embedUrl ? `
+                    <div class="cur-modal-video-wrap">
+                        <iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                ` : (atom.cover_url ? `
+                    <div class="cur-modal-cover-wrap">
+                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img">
+                    </div>
+                ` : '')}
+
+                <h2 class="cur-modal-title">${escapeHtml(atom.title || 'Untitled Video')}</h2>
+                ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
+
+                ${targetUrl ? `
+                    <div class="cur-modal-actions">
+                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn" style="background:#6B46C1;">▶ Watch on ${escapeHtml(siteName || 'Video Platform')} ↗</a>
+                    </div>
+                ` : ''}
+
+                ${fullContent ? `
+                    <div class="cur-modal-transcript-wrap">
+                        <div class="cur-modal-transcript-heading">Transcript / Dialogue</div>
+                        <div class="cur-modal-transcript-body">${escapeHtml(fullContent)}</div>
+                    </div>
+                ` : ''}
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        } else if (atom.kind === 'article') {
+            bodyHtml = `
+                <!-- FULL ARTICLE AT THE TOP -->
+                ${atom.cover_url ? `
+                    <div class="cur-modal-cover-wrap">
+                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img" loading="lazy">
+                    </div>
+                ` : ''}
+
+                <h2 class="cur-modal-title">${escapeHtml(atom.title || 'Untitled Article')}</h2>
+                ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
+
+                ${targetUrl ? `
+                    <div class="cur-modal-actions">
+                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ Read on ${escapeHtml(siteName || 'Publisher')}</a>
+                    </div>
+                ` : ''}
+
+                ${fullContent ? `
+                    <div class="cur-modal-article-text markdown-body">
+                        ${renderContentMarkdown(fullContent)}
+                    </div>
+                ` : ''}
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        } else if (atom.kind === 'note') {
+            bodyHtml = `
+                <!-- FULL NOTE AT THE TOP -->
+                <h2 class="cur-modal-title">${escapeHtml(atom.title || 'Personal Note')}</h2>
+                ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
+
+                <div class="cur-modal-note-text markdown-body">
+                    ${renderContentMarkdown(fullContent || atom.notes || '')}
+                </div>
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        } else {
+            // Bookmark / File / Other
+            bodyHtml = `
+                ${atom.cover_url ? `
+                    <div class="cur-modal-cover-wrap">
+                        <img src="${atom.cover_url}" alt="${escapeHtml(atom.title)}" class="cur-modal-cover-img" loading="lazy">
+                    </div>
+                ` : ''}
+
+                <h2 class="cur-modal-title">${escapeHtml(atom.title || 'Untitled')}</h2>
+                ${bylineParts.length ? `<div class="cur-modal-byline">${bylineParts.join(' • ')}</div>` : ''}
+
+                ${targetUrl ? `
+                    <div class="cur-modal-actions">
+                        <a href="${targetUrl}" target="_blank" rel="noopener" class="cur-modal-btn">↗ Visit Link</a>
+                    </div>
+                ` : ''}
+
+                ${fullContent ? `
+                    <div class="markdown-body" style="margin-bottom:14px;">
+                        ${renderContentMarkdown(fullContent)}
+                    </div>
+                ` : ''}
+
+                ${curatorNotesHtml}
+
+                <!-- METADATA UNDERNEATH -->
+                ${metaCardsHtml}
+            `;
+        }
+
+        const body = document.getElementById('curMetaBody');
+        body.innerHTML = bodyHtml;
         modal.showModal();
     };
 
