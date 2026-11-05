@@ -1301,7 +1301,6 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Blurhash</span>${formatSchemaVal(blur, true)}</div>
                 <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverPayload.hash, true)}</div>
-                <div class="cur-schema-row"><span>Original Asset URL</span>${formatSchemaVal(coverPayload.original_src_url, true, true)}</div>
                 <div class="cur-schema-row"><span>Word Count</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((raw.payload && raw.payload.text && raw.payload.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
                 <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.provider)}</div>
