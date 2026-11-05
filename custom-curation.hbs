@@ -1430,11 +1430,17 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 ` : ''}
 
-                ${fullContent ? `
-                    <div class="cur-modal-article-text markdown-body">
-                        ${renderContentMarkdown(fullContent)}
-                    </div>
-                ` : ''}
+                <div id="curModalArticleText" class="cur-modal-article-text markdown-body">
+                    ${fullContent ? renderContentMarkdown(fullContent) : (atom.excerpt ? `
+                        <div class="cur-article-excerpt-preview">${renderContentMarkdown(atom.excerpt)}</div>
+                    ` : '')}
+                    ${(!fullContent && atom.article_url) ? `
+                        <div id="curArticleLoading" style="display:flex; align-items:center; gap:8px; padding:12px; margin-top:12px; border-radius:6px; background:rgba(0,0,0,0.03); font-size:13px; color:var(--color-secondary-text, #666);">
+                            <span class="cur-loader" style="width:14px; height:14px; margin-right:4px;"></span>
+                            Loading full article text...
+                        </div>
+                    ` : ''}
+                </div>
 
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
@@ -1484,6 +1490,33 @@ html[data-theme="dark"] .markdown-body code {
         const body = document.getElementById('curMetaBody');
         body.innerHTML = bodyHtml;
         modal.showModal();
+
+        // Lazy-load full article markdown if not already loaded in memory
+        if (atom.kind === 'article' && atom.article_url && !atom.content && !atom._loadingArticle) {
+            atom._loadingArticle = true;
+            fetch(atom.article_url)
+                .then(r => {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.text();
+                })
+                .then(text => {
+                    atom.content = text;
+                    atom._loadingArticle = false;
+                    if (window.currentMetaAtomId === atom.id) {
+                        const container = document.getElementById('curModalArticleText');
+                        if (container) {
+                            container.innerHTML = renderContentMarkdown(text);
+                        }
+                    }
+                })
+                .catch(err => {
+                    atom._loadingArticle = false;
+                    const loader = document.getElementById('curArticleLoading');
+                    if (loader) {
+                        loader.style.display = 'none';
+                    }
+                });
+        }
     };
 
     window.copyCurId = function() {
