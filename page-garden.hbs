@@ -1295,6 +1295,35 @@ html[data-theme="dark"] .markdown-body code {
         const wordCount = (atom.metadata && atom.metadata.word_count) || (content.article && content.article.word_count) || (content.text && content.text.word_count);
         const favDisplay = prov.favicon ? `<span style="display:inline-flex; align-items:center; gap:5px;"><img src="${escapeHtml(prov.favicon)}" style="width:14px;height:14px;border-radius:2px;"> <a href="${escapeHtml(prov.favicon)}" target="_blank" rel="noopener" style="text-decoration:underline;">link ↗</a></span>` : formatSchemaVal(null);
 
+        const captureMethod = prov.capture_method || null;
+        const captureId = prov.capture_id || (atom.metadata && atom.metadata.arena_block_id) || null;
+        const captureUrl = prov.capture_url || (captureMethod === 'arena' && captureId ? `https://www.are.na/block/${captureId}` : null);
+
+        let captureMethodDisplay = formatSchemaVal(null);
+        if (captureMethod) {
+            let badgeColor = "#64748B";
+            let badgeBg = "rgba(100, 116, 139, 0.12)";
+            if (captureMethod === "arena") {
+                badgeColor = "#10B981";
+                badgeBg = "rgba(16, 185, 129, 0.12)";
+            } else if (captureMethod === "instapaper") {
+                badgeColor = "#F59E0B";
+                badgeBg = "rgba(245, 158, 11, 0.12)";
+            } else if (captureMethod === "cli") {
+                badgeColor = "#3B82F6";
+                badgeBg = "rgba(59, 130, 246, 0.12)";
+            }
+            captureMethodDisplay = `<span style="color:${badgeColor}; background:${badgeBg}; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600; text-transform:uppercase;">${escapeHtml(captureMethod)}</span>`;
+        }
+
+        let captureRefDisplay = formatSchemaVal(null);
+        if (captureUrl) {
+            const linkText = captureId ? `${captureMethod ? captureMethod + ' #' : ''}${escapeHtml(String(captureId))}` : captureUrl;
+            captureRefDisplay = `<a href="${escapeHtml(captureUrl)}" target="_blank" rel="noopener" style="font-family:'JetBrains Mono', monospace; font-size:11.5px; text-decoration:underline;">${linkText} ↗</a>`;
+        } else if (captureId) {
+            captureRefDisplay = `<span style="font-family:'JetBrains Mono', monospace; font-size:11.5px;">${escapeHtml(String(captureId))}</span>`;
+        }
+
         const rawMeta = (raw && raw.metadata_json) || atom.metadata || {};
         const metaKeys = Object.keys(rawMeta);
         const metaOverflowHtml = metaKeys.length ?
@@ -1342,6 +1371,8 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
                 <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
                 <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
+                <div class="cur-schema-row"><span>Capture Method</span>${captureMethodDisplay}</div>
+                <div class="cur-schema-row"><span>Capture Ref</span>${captureRefDisplay}</div>
             </div>
 
             <div class="cur-schema-card">
