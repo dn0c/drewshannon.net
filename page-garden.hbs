@@ -34,7 +34,7 @@
                 </div>
                 <div class="curation-search-box">
                     <span class="cur-search-icon">🔍</span>
-                    <input type="text" id="curationSearch" placeholder="Search 3,800+ items by title, author, tag, note... (Press /)" autocomplete="off">
+                    <input type="text" id="curationSearch" placeholder="Search 13,700+ items by title, author, tag, note... (Press /)" autocomplete="off">
                 </div>
             </div>
 
@@ -632,7 +632,8 @@ html[data-theme="dark"] .cur-schema-row {
     async function loadCurationData() {
         const statusEl = document.getElementById('curationStatus');
         try {
-            const resp = await fetch(GCS_MANIFEST_URL);
+            const cacheBuster = '?t=' + Math.floor(Date.now() / 60000);
+            const resp = await fetch(GCS_MANIFEST_URL + cacheBuster, { cache: 'no-cache' });
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             allAtoms = await resp.json();
 
@@ -642,10 +643,14 @@ html[data-theme="dark"] .cur-schema-row {
                 if (counts[a.kind] !== undefined) counts[a.kind]++;
             });
 
-            // Update badge counts
+            // Update badge counts and search placeholder
             for (const [k, v] of Object.entries(counts)) {
                 const b = document.getElementById(`badge-${k}`);
                 if (b) b.textContent = `(${v.toLocaleString()})`;
+            }
+            const searchInput = document.getElementById('curationSearch');
+            if (searchInput) {
+                searchInput.placeholder = `Search ${counts.all.toLocaleString()}+ items by title, author, tag, note... (Press /)`;
             }
 
             statusEl.style.display = 'none';
