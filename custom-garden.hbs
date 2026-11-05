@@ -1372,7 +1372,8 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
                 <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
                 <div class="cur-schema-row"><span>Capture Method</span>${captureMethodDisplay}</div>
-                <div class="cur-schema-row"><span>Capture Ref</span>${captureRefDisplay}</div>
+                <div class="cur-schema-row"><span>Capture ID</span>${formatSchemaVal(captureId, true)}</div>
+                <div class="cur-schema-row"><span>Capture URL</span>${formatSchemaVal(captureUrl, false, true)}</div>
             </div>
 
             <div class="cur-schema-card">
@@ -1385,10 +1386,17 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Blurhash</span>${formatSchemaVal(blur, true)}</div>
                 <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverContent.hash, true)}</div>
-                <div class="cur-schema-row"><span>Word Count</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
+                <div class="cur-schema-row"><span>Total Words</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((content.text && content.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
+                <div class="cur-schema-row"><span>Article File</span>${formatSchemaVal(content.article && content.article.file, true)}</div>
+                <div class="cur-schema-row"><span>Article Byline</span>${formatSchemaVal(content.article && content.article.byline)}</div>
                 <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(content.video && content.video.provider)}</div>
                 <div class="cur-schema-row"><span>Embed URL</span>${formatSchemaVal(content.video && content.video.embed_url, true, true)}</div>
+                <div class="cur-schema-row"><span>Video Duration</span>${formatSchemaVal(content.video && content.video.duration_seconds ? `${Math.floor(content.video.duration_seconds / 60)}m ${content.video.duration_seconds % 60}s` : null)}</div>
+                <div class="cur-schema-row"><span>Transcript</span>${formatSchemaVal(content.video && (content.video.transcript_language || (content.video.has_transcript ? 'present' : null)))}</div>
+                <div class="cur-schema-row"><span>Attachment File</span>${formatSchemaVal(content.file && content.file.filename, true)}</div>
+                <div class="cur-schema-row"><span>File Size</span>${formatSchemaVal(content.file && content.file.file_size_bytes ? `${(content.file.file_size_bytes / (1024 * 1024)).toFixed(2)} MB` : null)}</div>
+                <div class="cur-schema-row"><span>Page Count</span>${formatSchemaVal(content.file && content.file.page_count)}</div>
                 <div class="cur-schema-row"><span>metadata_json</span>${metaOverflowHtml}</div>
             </div>
 
