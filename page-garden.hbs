@@ -605,8 +605,25 @@ html[data-theme="dark"] .cur-schema-card {
     display: flex;
     justify-content: space-between;
     font-size: 12.5px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    align-items: baseline;
+    gap: 12px;
+}
+
+.cur-null {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--color-secondary-text, #888);
+    opacity: 0.65;
+    font-style: italic;
+    background: rgba(0,0,0,0.04);
+    padding: 1px 5px;
+    border-radius: 3px;
+    display: inline-block;
+}
+html[data-theme="dark"] .cur-null {
+    background: rgba(255,255,255,0.06);
 }
 
 html[data-theme="dark"] .cur-schema-row {
@@ -1190,45 +1207,114 @@ html[data-theme="dark"] .markdown-body code {
 
         const fullContent = atom.content || atom.excerpt || '';
 
-        // Curator notes (if present and distinct from fullContent)
-        let curatorNotesHtml = '';
-        if (atom.notes && atom.notes.trim() !== (fullContent || '').trim()) {
-            curatorNotesHtml = `
-                <div class="cur-modal-notes-banner">
-                    <div class="cur-modal-notes-title">Curator Notes</div>
-                    <div>${escapeHtml(atom.notes)}</div>
-                </div>
-            `;
+        // Schema Explorer formatter
+        function formatSchemaVal(val, isMono = false, isUrl = false) {
+            if (val === null || val === undefined || val === '') {
+                return '<span class="cur-null">null</span>';
+            }
+            if (typeof val === 'boolean') {
+                return `<span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; color:${val ? '#0D9488' : 'var(--color-secondary-text, #888)'}; font-weight:600;">${val}</span>`;
+            }
+            if (Array.isArray(val)) {
+                if (!val.length) return '<span class="cur-null">[] (empty)</span>';
+                return `<div style="display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">${val.map(v => `<span class="cur-tag">#${escapeHtml(v)}</span>`).join('')}</div>`;
+            }
+            if (isUrl) {
+                const label = val.length > 44 ? val.slice(0, 41) + '...' : val;
+                return `<a href="${escapeHtml(val)}" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline; word-break:break-all;">${escapeHtml(label)} ↗</a>`;
+            }
+            const s = String(val);
+            return `<span style="text-align:right; max-width:72%; word-break:break-word; ${isMono ? "font-family:'JetBrains Mono', monospace; font-size:11.5px;" : ""}">${escapeHtml(s)}</span>`;
         }
+
+        const coverPayload = (raw.payload && raw.payload.cover_image) || {};
+        const dims = coverPayload.dimensions ? `${coverPayload.dimensions.width} × ${coverPayload.dimensions.height}` : null;
+        const ratio = (atom.metadata && atom.metadata.aspect_ratio !== undefined && atom.metadata.aspect_ratio !== null) ? atom.metadata.aspect_ratio : coverPayload.aspect_ratio;
+        const blur = (atom.metadata && atom.metadata.blurhash) || coverPayload.blurhash;
+        const palette = (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) ? atom.metadata.color_palette : coverPayload.color_palette;
+        let paletteHtml = null;
+        if (palette && palette.length) {
+            paletteHtml = `<div style="display:inline-flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">` +
+                palette.map(c => `<span style="display:inline-flex; align-items:center; gap:3px; font-family:'JetBrains Mono', monospace; font-size:10.5px;"><span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
+                `</div>`;
+        }
+        const altTextVal = atom.alt_text || coverPayload.alt_text;
+        const wordCount = (atom.metadata && atom.metadata.word_count) || (raw.payload && raw.payload.article && raw.payload.article.word_count) || (raw.payload && raw.payload.text && raw.payload.text.word_count);
+        const favDisplay = prov.favicon ? `<span style="display:inline-flex; align-items:center; gap:5px;"><img src="${escapeHtml(prov.favicon)}" style="width:14px;height:14px;border-radius:2px;"> <a href="${escapeHtml(prov.favicon)}" target="_blank" rel="noopener" style="text-decoration:underline;">link ↗</a></span>` : formatSchemaVal(null);
+
+        const rawMeta = (raw && raw.metadata_json) || atom.metadata || {};
+        const metaKeys = Object.keys(rawMeta);
+        const metaOverflowHtml = metaKeys.length ?
+            `<div style="display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">` +
+            metaKeys.map(k => `<span class="cur-tag" style="font-family:'JetBrains Mono', monospace; font-size:10.5px;">${escapeHtml(k)}: ${escapeHtml(typeof rawMeta[k] === 'object' && rawMeta[k] !== null ? JSON.stringify(rawMeta[k]) : String(rawMeta[k]))}</span>`).join(' ') +
+            `</div>` : formatSchemaVal(null);
 
         const collectionsList = atom.collections || cur.collections || [];
         const collectionsStr = collectionsList.length ? collectionsList.join(', ') : 'Inbox';
 
         const metaCardsHtml = `
             <div class="cur-modal-meta-divider">
-                <span class="cur-modal-meta-label">Atom Metadata &amp; Provenance</span>
+                <span class="cur-modal-meta-label">OpenCurate Schema Explorer</span>
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 1: System Envelope</div>
                 <div class="cur-schema-row"><span>Atom ID</span><span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(atom.id)}</span></div>
-                <div class="cur-schema-row"><span>Kind</span><span>${atom.kind}</span></div>
-                <div class="cur-schema-row"><span>Captured Date</span><span>${atom.date || '—'}</span></div>
+                <div class="cur-schema-row"><span>Kind</span><span class="cur-kind-pill kind-${atom.kind}">${atom.kind}</span></div>
+                <div class="cur-schema-row"><span>Version</span><span style="font-family:'JetBrains Mono', monospace;">v${raw.version || 2} (OpenCurate)</span></div>
+                <div class="cur-schema-row"><span>Schema Spec</span>${formatSchemaVal(raw['$schema'] || 'https://raw.githubusercontent.com/dn0c/wideweb/main/schema/atom.schema.json', true, true)}</div>
+                <div class="cur-schema-row"><span>Captured Date</span>${formatSchemaVal(raw.created_at || atom.date)}</div>
+                <div class="cur-schema-row"><span>Updated Date</span>${formatSchemaVal(raw.updated_at)}</div>
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 2: Provenance Layer</div>
-                <div class="cur-schema-row"><span>Author / Creator</span><span>${escapeHtml(atom.author || '—')}</span></div>
-                <div class="cur-schema-row"><span>Source Platform</span><span>${escapeHtml(siteName || 'Web')}</span></div>
-                ${targetUrl ? `<div class="cur-schema-row"><span>Source URL</span><span><a href="${targetUrl}" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">${escapeHtml(targetUrl)} ↗</a></span></div>` : ''}
+                <div class="cur-schema-row"><span>Author / Creator</span>${formatSchemaVal(atom.author || prov.author)}</div>
+                <div class="cur-schema-row"><span>Author URL</span>${formatSchemaVal(prov.author_url, true, true)}</div>
+                <div class="cur-schema-row"><span>Publisher / Site</span>${formatSchemaVal(siteName || prov.site_name)}</div>
+                <div class="cur-schema-row"><span>Favicon</span>${favDisplay}</div>
+                <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
+                <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
+                <div class="cur-schema-row"><span>Canonical URL</span>${formatSchemaVal(prov.canonical_url, false, true)}</div>
+                <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 3: Curation Layer</div>
-                <div class="cur-schema-row"><span>Collections</span><span>${escapeHtml(collectionsStr)}</span></div>
-                <div class="cur-schema-row"><span>Tags</span><span>${(atom.tags || []).map(t => '#' + t).join(' ') || 'None'}</span></div>
-                ${atom.notes ? `<div style="margin-top:10px; font-size:13px; color:var(--color-secondary-text, #666);">${escapeHtml(atom.notes)}</div>` : ''}
+                <div class="cur-schema-row"><span>Curated Title</span>${formatSchemaVal(atom.title)}</div>
+                <div class="cur-schema-row"><span>Visibility</span><span class="cur-vis-badge">${escapeHtml(cur.visibility || 'public')}</span></div>
+                <div class="cur-schema-row"><span>Favorite</span>${formatSchemaVal(Boolean(cur.favorite))}</div>
+                <div class="cur-schema-row"><span>Collections</span>${(collectionsList && collectionsList.length) ? escapeHtml(collectionsList.join(', ')) : formatSchemaVal(null)}</div>
+                <div class="cur-schema-row"><span>Tags</span>${formatSchemaVal(atom.tags)}</div>
+                <div class="cur-schema-row"><span>Notes</span>${formatSchemaVal(atom.notes)}</div>
             </div>
+
+            <div class="cur-schema-card">
+                <div class="cur-schema-title">Tier 4: Payload Layer</div>
+                <div class="cur-schema-row"><span>Alt Text</span>${altTextVal ? `“${escapeHtml(altTextVal)}”` : formatSchemaVal(null)}</div>
+                <div class="cur-schema-row"><span>Cover File</span>${formatSchemaVal(coverPayload.file || (atom.cover_url ? 'cover.jpg' : null), true)}</div>
+                <div class="cur-schema-row"><span>Dimensions</span>${formatSchemaVal(dims)}</div>
+                <div class="cur-schema-row"><span>Aspect Ratio</span>${formatSchemaVal(ratio)}</div>
+                <div class="cur-schema-row"><span>Format / MIME</span>${formatSchemaVal(coverPayload.mime_type || (atom.kind === 'image' ? 'image/jpeg' : null), true)}</div>
+                <div class="cur-schema-row"><span>Blurhash</span>${formatSchemaVal(blur, true)}</div>
+                <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
+                <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverPayload.hash, true)}</div>
+                <div class="cur-schema-row"><span>Original Asset URL</span>${formatSchemaVal(coverPayload.original_src_url, true, true)}</div>
+                <div class="cur-schema-row"><span>Destination URL</span>${formatSchemaVal(targetUrl, false, true)}</div>
+                <div class="cur-schema-row"><span>Word Count</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
+                <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((raw.payload && raw.payload.text && raw.payload.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
+                <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.provider)}</div>
+                <div class="cur-schema-row"><span>Embed URL</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.embed_url, true, true)}</div>
+                <div class="cur-schema-row"><span>metadata_json</span>${metaOverflowHtml}</div>
+            </div>
+
+            <details style="margin-top:14px; border:1px solid rgba(0,0,0,0.06); border-radius:8px; overflow:hidden;">
+                <summary style="padding:10px 14px; font-size:12px; font-weight:600; cursor:pointer; background:rgba(0,0,0,0.02); display:flex; justify-content:space-between; user-select:none;">
+                    <span>{ } Full <code>atom.json</code> Spec</span>
+                    <span style="font-size:11px; opacity:0.6;">inspect raw payload</span>
+                </summary>
+                <pre style="margin:0; padding:12px; font-size:11px; font-family:'JetBrains Mono', monospace; overflow:auto; max-height:240px; background:rgba(0,0,0,0.01);"><code>${escapeHtml(JSON.stringify(raw && Object.keys(raw).length ? raw : atom, null, 2))}</code></pre>
+            </details>
         `;
 
         let bodyHtml = '';
@@ -1251,8 +1337,6 @@ html[data-theme="dark"] .markdown-body code {
                         </div>
                     ` : ''}
                 </div>
-
-                ${curatorNotesHtml}
 
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
@@ -1294,8 +1378,6 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 ` : ''}
 
-                ${curatorNotesHtml}
-
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
             `;
@@ -1329,8 +1411,6 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 ` : ''}
 
-                ${curatorNotesHtml}
-
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
             `;
@@ -1358,8 +1438,6 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 ` : ''}
 
-                ${curatorNotesHtml}
-
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
             `;
@@ -1372,8 +1450,6 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-modal-note-text markdown-body">
                     ${renderContentMarkdown(fullContent || atom.notes || '')}
                 </div>
-
-                ${curatorNotesHtml}
 
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
@@ -1401,8 +1477,6 @@ html[data-theme="dark"] .markdown-body code {
                         ${renderContentMarkdown(fullContent)}
                     </div>
                 ` : ''}
-
-                ${curatorNotesHtml}
 
                 <!-- METADATA UNDERNEATH -->
                 ${metaCardsHtml}
