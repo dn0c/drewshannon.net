@@ -1259,80 +1259,62 @@ html[data-theme="dark"] .markdown-body code {
 
         const fullContent = atom.content || atom.excerpt || '';
 
-        // Schema Explorer formatter
-        function formatSchemaVal(val, isMono = false, isUrl = false) {
-            if (val === null || val === undefined || val === '') {
+        // Dynamic Schema Explorer formatters (automatically captures added/removed fields directly from JSON)
+        function formatDynamicValue(val, depth = 0) {
+            if (val === null || val === undefined) {
                 return '<span class="cur-null">null</span>';
             }
             if (typeof val === 'boolean') {
                 return `<span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; color:${val ? '#0D9488' : 'var(--color-secondary-text, #888)'}; font-weight:600;">${val}</span>`;
             }
+            if (typeof val === 'number') {
+                return `<span style="font-family:'JetBrains Mono', monospace; font-size:11.5px;">${val}</span>`;
+            }
+            if (typeof val === 'string') {
+                if (val.startsWith('http://') || val.startsWith('https://')) {
+                    const label = val.length > 48 ? val.slice(0, 45) + '...' : val;
+                    return `<a href="${escapeHtml(val)}" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline; word-break:break-all;">${escapeHtml(label)} ↗</a>`;
+                }
+                return `<span style="text-align:right; max-width:72%; word-break:break-word;">${escapeHtml(val)}</span>`;
+            }
             if (Array.isArray(val)) {
-                if (!val.length) return '<span class="cur-null">[] (empty)</span>';
-                return `<div style="display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">${val.map(v => `<span class="cur-tag">#${escapeHtml(v)}</span>`).join('')}</div>`;
+                if (!val.length) return '<span class="cur-null">[]</span>';
+                const isColorPalette = val.length && val.every(item => typeof item === 'string' && /^#[0-9A-Fa-f]{3,8}$/.test(item));
+                if (isColorPalette) {
+                    return `<div style="display:inline-flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">` +
+                        val.map(c => `<span style="display:inline-flex; align-items:center; gap:3px; font-family:'JetBrains Mono', monospace; font-size:10.5px;"><span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
+                        `</div>`;
+                }
+                return `<div style="display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">${val.map(v => `<span class="cur-tag">#${escapeHtml(String(v))}</span>`).join('')}</div>`;
             }
-            if (isUrl) {
-                const label = val.length > 44 ? val.slice(0, 41) + '...' : val;
-                return `<a href="${escapeHtml(val)}" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline; word-break:break-all;">${escapeHtml(label)} ↗</a>`;
+            if (typeof val === 'object') {
+                const keys = Object.keys(val);
+                if (!keys.length) return '<span class="cur-null">{}</span>';
+                return `<div style="display:flex; flex-direction:column; gap:4px; width:100%; margin-top:3px;">` +
+                    keys.map(k => `
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:3px 8px; background:rgba(0,0,0,0.025); border-radius:4px; font-size:11px;">
+                            <span style="font-family:'JetBrains Mono', monospace; opacity:0.75; font-size:10.5px;">${escapeHtml(k)}</span>
+                            ${formatDynamicValue(val[k], depth + 1)}
+                        </div>
+                    `).join('') + `</div>`;
             }
-            const s = String(val);
-            return `<span style="text-align:right; max-width:72%; word-break:break-word; ${isMono ? "font-family:'JetBrains Mono', monospace; font-size:11.5px;" : ""}">${escapeHtml(s)}</span>`;
+            return escapeHtml(String(val));
+        }
+
+        function renderDynamicTier(tierObj) {
+            if (!tierObj || typeof tierObj !== 'object' || !Object.keys(tierObj).length) {
+                return '<div class="cur-schema-row"><span class="cur-null">(empty layer)</span></div>';
+            }
+            return Object.entries(tierObj).map(([key, value]) => `
+                <div class="cur-schema-row" style="align-items:flex-start;">
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; opacity:0.85;">${escapeHtml(key)}</span>
+                    ${formatDynamicValue(value)}
+                </div>
+            `).join('');
         }
 
         const content = (raw && (raw.content || raw.payload)) || {};
-        const coverContent = (content && content.cover_image) || {};
-        const dims = coverContent.dimensions ? `${coverContent.dimensions.width} × ${coverContent.dimensions.height}` : null;
-        const ratio = (atom.metadata && atom.metadata.aspect_ratio !== undefined && atom.metadata.aspect_ratio !== null) ? atom.metadata.aspect_ratio : coverContent.aspect_ratio;
-        const blur = (atom.metadata && atom.metadata.blurhash) || coverContent.blurhash;
-        const palette = (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) ? atom.metadata.color_palette : coverContent.color_palette;
-        let paletteHtml = null;
-        if (palette && palette.length) {
-            paletteHtml = `<div style="display:inline-flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">` +
-                palette.map(c => `<span style="display:inline-flex; align-items:center; gap:3px; font-family:'JetBrains Mono', monospace; font-size:10.5px;"><span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
-                `</div>`;
-        }
-        const altTextVal = atom.alt_text || coverContent.alt_text;
-        const wordCount = (atom.metadata && atom.metadata.word_count) || (content.article && content.article.word_count) || (content.text && content.text.word_count);
-        const favDisplay = prov.favicon ? `<span style="display:inline-flex; align-items:center; gap:5px;"><img src="${escapeHtml(prov.favicon)}" style="width:14px;height:14px;border-radius:2px;"> <a href="${escapeHtml(prov.favicon)}" target="_blank" rel="noopener" style="text-decoration:underline;">link ↗</a></span>` : formatSchemaVal(null);
-
-        const captureMethod = prov.capture_method || null;
-        const captureId = prov.capture_id || (atom.metadata && atom.metadata.arena_block_id) || null;
-        const captureUrl = prov.capture_url || (captureMethod === 'arena' && captureId ? `https://www.are.na/block/${captureId}` : null);
-
-        let captureMethodDisplay = formatSchemaVal(null);
-        if (captureMethod) {
-            let badgeColor = "#64748B";
-            let badgeBg = "rgba(100, 116, 139, 0.12)";
-            if (captureMethod === "arena") {
-                badgeColor = "#10B981";
-                badgeBg = "rgba(16, 185, 129, 0.12)";
-            } else if (captureMethod === "instapaper") {
-                badgeColor = "#F59E0B";
-                badgeBg = "rgba(245, 158, 11, 0.12)";
-            } else if (captureMethod === "cli") {
-                badgeColor = "#3B82F6";
-                badgeBg = "rgba(59, 130, 246, 0.12)";
-            }
-            captureMethodDisplay = `<span style="color:${badgeColor}; background:${badgeBg}; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600; text-transform:uppercase;">${escapeHtml(captureMethod)}</span>`;
-        }
-
-        let captureRefDisplay = formatSchemaVal(null);
-        if (captureUrl) {
-            const linkText = captureId ? `${captureMethod ? captureMethod + ' #' : ''}${escapeHtml(String(captureId))}` : captureUrl;
-            captureRefDisplay = `<a href="${escapeHtml(captureUrl)}" target="_blank" rel="noopener" style="font-family:'JetBrains Mono', monospace; font-size:11.5px; text-decoration:underline;">${linkText} ↗</a>`;
-        } else if (captureId) {
-            captureRefDisplay = `<span style="font-family:'JetBrains Mono', monospace; font-size:11.5px;">${escapeHtml(String(captureId))}</span>`;
-        }
-
         const rawMeta = (raw && raw.metadata_json) || atom.metadata || {};
-        const metaKeys = Object.keys(rawMeta);
-        const metaOverflowHtml = metaKeys.length ?
-            `<div style="display:inline-flex; flex-wrap:wrap; gap:4px; justify-content:flex-end;">` +
-            metaKeys.map(k => `<span class="cur-tag" style="font-family:'JetBrains Mono', monospace; font-size:10.5px;">${escapeHtml(k)}: ${escapeHtml(typeof rawMeta[k] === 'object' && rawMeta[k] !== null ? JSON.stringify(rawMeta[k]) : String(rawMeta[k]))}</span>`).join(' ') +
-            `</div>` : formatSchemaVal(null);
-
-        const collectionsList = atom.collections || cur.collections || [];
-        const collectionsStr = collectionsList.length ? collectionsList.join(', ') : 'Inbox';
 
         const metaCardsHtml = `
             <div class="cur-modal-meta-divider">
@@ -1347,63 +1329,37 @@ html[data-theme="dark"] .markdown-body code {
                         <span style="font-size:11px; opacity:0.5;">• v${raw.version || 3} (WideWeb)</span>
                     </div>
                     <div style="font-size:11px; opacity:0.6;">
-                        <span>Captured ${formatSchemaVal(raw.created_at || atom.date)}</span>
-                        ${raw.updated_at ? ` • <span>Updated ${formatSchemaVal(raw.updated_at)}</span>` : ''}
+                        <span>Captured ${formatDynamicValue(raw.created_at || atom.date)}</span>
+                        ${raw.updated_at ? ` • <span>Updated ${formatDynamicValue(raw.updated_at)}</span>` : ''}
                     </div>
                 </div>
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 1: Curation Layer</div>
-                <div class="cur-schema-row"><span>Curated Title</span>${formatSchemaVal(atom.title)}</div>
-                <div class="cur-schema-row"><span>Visibility</span><span class="cur-vis-badge">${escapeHtml(cur.visibility || 'public')}</span></div>
-                <div class="cur-schema-row"><span>Favorite</span>${formatSchemaVal(Boolean(cur.favorite))}</div>
-                <div class="cur-schema-row"><span>Collections</span>${(collectionsList && collectionsList.length) ? escapeHtml(collectionsList.join(', ')) : formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>Tags</span>${formatSchemaVal(atom.tags)}</div>
-                <div class="cur-schema-row"><span>Notes</span>${formatSchemaVal(atom.notes)}</div>
+                ${renderDynamicTier(cur)}
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 2: Source Layer</div>
-                <div class="cur-schema-row"><span>Author / Creator</span>${formatSchemaVal(atom.author || prov.author)}</div>
-                <div class="cur-schema-row"><span>Publisher / Site</span>${formatSchemaVal(siteName || prov.site_name)}</div>
-                <div class="cur-schema-row"><span>Favicon</span>${favDisplay}</div>
-                <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
-                <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
-                <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
-                <div class="cur-schema-row"><span>Capture Method</span>${captureMethodDisplay}</div>
-                <div class="cur-schema-row"><span>Capture ID</span>${formatSchemaVal(captureId, true)}</div>
-                <div class="cur-schema-row"><span>Capture URL</span>${formatSchemaVal(captureUrl, false, true)}</div>
+                ${renderDynamicTier(prov)}
             </div>
 
             <div class="cur-schema-card">
                 <div class="cur-schema-title">Tier 3: Content Layer</div>
-                <div class="cur-schema-row"><span>Alt Text</span>${altTextVal ? `“${escapeHtml(altTextVal)}”` : formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>Cover File</span>${formatSchemaVal(coverContent.file || (atom.cover_url ? 'cover.jpg' : null), true)}</div>
-                <div class="cur-schema-row"><span>Dimensions</span>${formatSchemaVal(dims)}</div>
-                <div class="cur-schema-row"><span>Aspect Ratio</span>${formatSchemaVal(ratio)}</div>
-                <div class="cur-schema-row"><span>Format / MIME</span>${formatSchemaVal(coverContent.mime_type || (atom.kind === 'image' ? 'image/jpeg' : null), true)}</div>
-                <div class="cur-schema-row"><span>Blurhash</span>${formatSchemaVal(blur, true)}</div>
-                <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverContent.hash, true)}</div>
-                <div class="cur-schema-row"><span>Total Words</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((content.text && content.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
-                <div class="cur-schema-row"><span>Article File</span>${formatSchemaVal(content.article && content.article.file, true)}</div>
-                <div class="cur-schema-row"><span>Article Byline</span>${formatSchemaVal(content.article && content.article.byline)}</div>
-                <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(content.video && content.video.provider)}</div>
-                <div class="cur-schema-row"><span>Embed URL</span>${formatSchemaVal(content.video && content.video.embed_url, true, true)}</div>
-                <div class="cur-schema-row"><span>Video Duration</span>${formatSchemaVal(content.video && content.video.duration_seconds ? `${Math.floor(content.video.duration_seconds / 60)}m ${content.video.duration_seconds % 60}s` : null)}</div>
-                <div class="cur-schema-row"><span>Transcript</span>${formatSchemaVal(content.video && (content.video.transcript_language || (content.video.has_transcript ? 'present' : null)))}</div>
-                <div class="cur-schema-row"><span>Attachment File</span>${formatSchemaVal(content.file && content.file.filename, true)}</div>
-                <div class="cur-schema-row"><span>File Size</span>${formatSchemaVal(content.file && content.file.file_size_bytes ? `${(content.file.file_size_bytes / (1024 * 1024)).toFixed(2)} MB` : null)}</div>
-                <div class="cur-schema-row"><span>Page Count</span>${formatSchemaVal(content.file && content.file.page_count)}</div>
-                <div class="cur-schema-row"><span>metadata_json</span>${metaOverflowHtml}</div>
+                ${renderDynamicTier(content)}
             </div>
 
-            <details style="margin-top:14px; border:1px solid rgba(0,0,0,0.06); border-radius:8px; overflow:hidden;">
+            ${rawMeta && Object.keys(rawMeta).length ? `
+            <div class="cur-schema-card">
+                <div class="cur-schema-title">Overflow Metadata (<code>metadata_json</code>)</div>
+                ${renderDynamicTier(rawMeta)}
+            </div>` : ''}
+
+            <details style="margin-top:14px; border:1px solid rgba(0,0,0,0.06); border-radius:8px; overflow:hidden;" open>
                 <summary style="padding:10px 14px; font-size:12px; font-weight:600; cursor:pointer; background:rgba(0,0,0,0.02); display:flex; justify-content:space-between; user-select:none;">
                     <span>{ } Full <code>atom.json</code> Spec</span>
-                    <span style="font-size:11px; opacity:0.6;">inspect raw content</span>
+                    <span style="font-size:11px; opacity:0.6;">raw json</span>
                 </summary>
                 <div style="padding:12px; font-size:11px; font-family:'JetBrains Mono', monospace; background:rgba(0,0,0,0.01);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
