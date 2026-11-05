@@ -1065,10 +1065,11 @@ html[data-theme="dark"] .markdown-body code {
                     </div>
                 `;
             } else {
+                const targetLink = atom.source_url || atom.canonical_url;
                 bodyHtml = `
                     <div class="cur-card-body">
                         <div class="cur-card-title">
-                            ${atom.destination_url ? `<a href="${atom.destination_url}" target="_blank" rel="noopener">${escapeHtml(atom.title)}</a>` : escapeHtml(atom.title)}
+                            ${targetLink ? `<a href="${targetLink}" target="_blank" rel="noopener">${escapeHtml(atom.title)}</a>` : escapeHtml(atom.title)}
                         </div>
                         ${atom.author ? `<div class="cur-author-byline">${escapeHtml(atom.author)}</div>` : ''}
                         ${atom.notes ? `<div class="cur-card-notes">${escapeHtml(atom.notes)}</div>` : ''}
@@ -1079,12 +1080,13 @@ html[data-theme="dark"] .markdown-body code {
             // Tags & Actions
             const tagsHtml = (atom.tags || []).slice(0, 3).map(t => `<span class="cur-tag">#${t}</span>`).join('');
             let actionHtml = '';
+            const visitUrl = atom.source_url || atom.canonical_url;
             if (atom.kind === 'video') {
                 actionHtml = `<button class="cur-read-btn" style="background:#6B46C1;" onclick="openCurVideo('${atom.id}')">▶ Play</button>`;
             } else if (atom.kind === 'article' || atom.kind === 'note') {
                 actionHtml = `<button class="cur-read-btn" onclick="openCurReader('${atom.id}')">📖 Read</button>`;
-            } else if (atom.destination_url) {
-                actionHtml = `<a class="cur-read-btn" style="background:transparent; border:1px solid var(--border-color, #ddd); color:inherit; text-decoration:none;" href="${atom.destination_url}" target="_blank" rel="noopener">↗ Visit</a>`;
+            } else if (visitUrl) {
+                actionHtml = `<a class="cur-read-btn" style="background:transparent; border:1px solid var(--border-color, #ddd); color:inherit; text-decoration:none;" href="${visitUrl}" target="_blank" rel="noopener">↗ Visit</a>`;
             } else if (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) {
                 actionHtml = `<div class="cur-palette-dots">` + atom.metadata.color_palette.slice(0, 3).map(c => `<div class="cur-palette-dot" style="background:${c}"></div>`).join('') + `</div>`;
             }
@@ -1130,7 +1132,7 @@ html[data-theme="dark"] .markdown-body code {
     function getVideoEmbedUrl(atom, autoplay = false) {
         const raw = atom.raw || {};
         const video = (raw.payload && raw.payload.video) || {};
-        let url = video.embed_url || atom.destination_url || atom.source_url || '';
+        let url = video.embed_url || atom.source_url || (prov && prov.canonical_url) || '';
         if (!url) return null;
 
         let embed = null;
@@ -1192,7 +1194,7 @@ html[data-theme="dark"] .markdown-body code {
         kindEl.textContent = atom.kind.toUpperCase();
         document.getElementById('curMetaId').textContent = atom.id;
 
-        const targetUrl = atom.destination_url || atom.source_url || prov.canonical_url;
+        const targetUrl = atom.source_url || prov.canonical_url || prov.source_url;
         let siteName = atom.site_name || prov.site_name || '';
         if (!siteName && targetUrl) {
             try {
@@ -1300,7 +1302,6 @@ html[data-theme="dark"] .markdown-body code {
                 <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverPayload.hash, true)}</div>
                 <div class="cur-schema-row"><span>Original Asset URL</span>${formatSchemaVal(coverPayload.original_src_url, true, true)}</div>
-                <div class="cur-schema-row"><span>Destination URL</span>${formatSchemaVal(targetUrl, false, true)}</div>
                 <div class="cur-schema-row"><span>Word Count</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
                 <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((raw.payload && raw.payload.text && raw.payload.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
                 <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.provider)}</div>
