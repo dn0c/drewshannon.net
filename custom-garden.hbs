@@ -954,6 +954,7 @@ html[data-theme="dark"] .markdown-body code {
 <script>
 (function() {
     const GCS_MANIFEST_URL = 'https://storage.googleapis.com/wideweb-assets-drew/curation_public.json';
+    const GCS_RECENT_URL = 'https://storage.googleapis.com/wideweb-assets-drew/curation_recent.json';
     const ITEMS_PER_PAGE = 36;
 
     let allAtoms = [];
@@ -962,38 +963,73 @@ html[data-theme="dark"] .markdown-body code {
     let activeFilter = 'all';
     let searchQuery = '';
     let counts = { all: 0, video: 0, quote: 0, image: 0, bookmark: 0, article: 0, note: 0 };
+    let fullCatalogLoaded = false;
 
     window.currentReaderAtomId = null;
     window.currentMetaAtomId = null;
 
+    function updateCountsAndBadges(atoms) {
+        counts = { all: atoms.length, video: 0, quote: 0, image: 0, bookmark: 0, article: 0, note: 0 };
+        atoms.forEach(a => {
+            if (counts[a.kind] !== undefined) counts[a.kind]++;
+        });
+
+        for (const [k, v] of Object.entries(counts)) {
+            const b = document.getElementById(`badge-${k}`);
+            if (b) b.textContent = `(${v.toLocaleString()})`;
+        }
+        const searchInput = document.getElementById('curationSearch');
+        if (searchInput) {
+            searchInput.placeholder = `Search ${counts.all.toLocaleString()}+ items by title, author, tag, note... (Press /)`;
+        }
+    }
+
     async function loadCurationData() {
         const statusEl = document.getElementById('curationStatus');
+
+        // Stage 0: Instant restore from client cache if available (0ms)
         try {
-            const cacheBuster = '?t=' + Math.floor(Date.now() / 60000);
-            const resp = await fetch(GCS_MANIFEST_URL + cacheBuster, { cache: 'no-cache' });
+            const cached = localStorage.getItem('wideweb_garden_recent_v1');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    allAtoms = parsed;
+                    updateCountsAndBadges(allAtoms);
+                    if (statusEl) statusEl.style.display = 'none';
+                    applyFilters();
+                }
+            }
+        } catch (e) {}
+
+        // Stage 1: Quick fetch of recent batch (~32 KB gzipped, renders in ~50ms)
+        fetch(GCS_RECENT_URL)
+            .then(r => r.ok ? r.json() : null)
+            .then(recentItems => {
+                if (recentItems && recentItems.length && !fullCatalogLoaded) {
+                    try { localStorage.setItem('wideweb_garden_recent_v1', JSON.stringify(recentItems)); } catch(e){}
+                    allAtoms = recentItems;
+                    updateCountsAndBadges(allAtoms);
+                    if (statusEl) statusEl.style.display = 'none';
+                    applyFilters();
+                }
+            })
+            .catch(() => {});
+
+        // Stage 2: Background stream of full public catalog (~5 MB gzipped, complete with raw schemas)
+        try {
+            const resp = await fetch(GCS_MANIFEST_URL);
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            allAtoms = await resp.json();
+            const fullItems = await resp.json();
+            fullCatalogLoaded = true;
+            allAtoms = fullItems;
 
-            // Compute counts
-            counts.all = allAtoms.length;
-            allAtoms.forEach(a => {
-                if (counts[a.kind] !== undefined) counts[a.kind]++;
-            });
-
-            // Update badge counts and search placeholder
-            for (const [k, v] of Object.entries(counts)) {
-                const b = document.getElementById(`badge-${k}`);
-                if (b) b.textContent = `(${v.toLocaleString()})`;
-            }
-            const searchInput = document.getElementById('curationSearch');
-            if (searchInput) {
-                searchInput.placeholder = `Search ${counts.all.toLocaleString()}+ items by title, author, tag, note... (Press /)`;
-            }
-
-            statusEl.style.display = 'none';
+            updateCountsAndBadges(allAtoms);
+            if (statusEl) statusEl.style.display = 'none';
             applyFilters();
         } catch (err) {
-            statusEl.innerHTML = `⚠️ Error loading curation library: ${err.message}. Please check back shortly.`;
+            if (allAtoms.length === 0 && statusEl) {
+                statusEl.innerHTML = `⚠️ Error loading curation library: ${err.message}. Please check back shortly.`;
+            }
         }
     }
 
@@ -1012,8 +1048,21 @@ html[data-theme="dark"] .markdown-body code {
             return true;
         });
 
+        const grid = document.getElementById('curationGrid');
+        const footer = document.getElementById('curationFooter');
+
+        // If cards are already displayed on screen and no filter/search is active, don't re-render or shift scroll
+        if (grid && grid.children.length > 0 && !q && activeFilter === 'all') {
+            if (footer) footer.style.display = displayedCount < filteredAtoms.length ? 'block' : 'none';
+            const loadBtn = document.getElementById('loadMoreBtn');
+            if (loadBtn) {
+                loadBtn.textContent = `Load More (${(filteredAtoms.length - displayedCount).toLocaleString()} remaining)`;
+            }
+            return;
+        }
+
         displayedCount = 0;
-        document.getElementById('curationGrid').innerHTML = '';
+        if (grid) grid.innerHTML = '';
         renderNextBatch();
     }
 
