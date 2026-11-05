@@ -1180,7 +1180,8 @@ html[data-theme="dark"] .markdown-body code {
 
     function getVideoEmbedUrl(atom, autoplay = false) {
         const raw = atom.raw || {};
-        const video = (raw.payload && raw.payload.video) || {};
+        const content = (raw && (raw.content || raw.payload)) || {};
+        const video = content.video || {};
         let url = video.embed_url || atom.source_url || '';
         if (!url) return null;
 
@@ -1234,7 +1235,7 @@ html[data-theme="dark"] .markdown-body code {
         window.currentReaderAtomId = atom.id;
 
         const raw = atom.raw || {};
-        const prov = raw.provenance || {};
+        const prov = (raw && (raw.source || raw.provenance)) || {};
         const cur = raw.curation || {};
         const modal = document.getElementById('curMetaModal');
 
@@ -1278,19 +1279,20 @@ html[data-theme="dark"] .markdown-body code {
             return `<span style="text-align:right; max-width:72%; word-break:break-word; ${isMono ? "font-family:'JetBrains Mono', monospace; font-size:11.5px;" : ""}">${escapeHtml(s)}</span>`;
         }
 
-        const coverPayload = (raw.payload && raw.payload.cover_image) || {};
-        const dims = coverPayload.dimensions ? `${coverPayload.dimensions.width} × ${coverPayload.dimensions.height}` : null;
-        const ratio = (atom.metadata && atom.metadata.aspect_ratio !== undefined && atom.metadata.aspect_ratio !== null) ? atom.metadata.aspect_ratio : coverPayload.aspect_ratio;
-        const blur = (atom.metadata && atom.metadata.blurhash) || coverPayload.blurhash;
-        const palette = (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) ? atom.metadata.color_palette : coverPayload.color_palette;
+        const content = (raw && (raw.content || raw.payload)) || {};
+        const coverContent = (content && content.cover_image) || {};
+        const dims = coverContent.dimensions ? `${coverContent.dimensions.width} × ${coverContent.dimensions.height}` : null;
+        const ratio = (atom.metadata && atom.metadata.aspect_ratio !== undefined && atom.metadata.aspect_ratio !== null) ? atom.metadata.aspect_ratio : coverContent.aspect_ratio;
+        const blur = (atom.metadata && atom.metadata.blurhash) || coverContent.blurhash;
+        const palette = (atom.metadata && atom.metadata.color_palette && atom.metadata.color_palette.length) ? atom.metadata.color_palette : coverContent.color_palette;
         let paletteHtml = null;
         if (palette && palette.length) {
             paletteHtml = `<div style="display:inline-flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">` +
                 palette.map(c => `<span style="display:inline-flex; align-items:center; gap:3px; font-family:'JetBrains Mono', monospace; font-size:10.5px;"><span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:${c}; border:1px solid rgba(0,0,0,0.15);"></span>${c}</span>`).join(' ') +
                 `</div>`;
         }
-        const altTextVal = atom.alt_text || coverPayload.alt_text;
-        const wordCount = (atom.metadata && atom.metadata.word_count) || (raw.payload && raw.payload.article && raw.payload.article.word_count) || (raw.payload && raw.payload.text && raw.payload.text.word_count);
+        const altTextVal = atom.alt_text || coverContent.alt_text;
+        const wordCount = (atom.metadata && atom.metadata.word_count) || (content.article && content.article.word_count) || (content.text && content.text.word_count);
         const favDisplay = prov.favicon ? `<span style="display:inline-flex; align-items:center; gap:5px;"><img src="${escapeHtml(prov.favicon)}" style="width:14px;height:14px;border-radius:2px;"> <a href="${escapeHtml(prov.favicon)}" target="_blank" rel="noopener" style="text-decoration:underline;">link ↗</a></span>` : formatSchemaVal(null);
 
         const rawMeta = (raw && raw.metadata_json) || atom.metadata || {};
@@ -1305,31 +1307,25 @@ html[data-theme="dark"] .markdown-body code {
 
         const metaCardsHtml = `
             <div class="cur-modal-meta-divider">
-                <span class="cur-modal-meta-label">OpenCurate Schema Explorer</span>
+                <span class="cur-modal-meta-label">WideWeb Schema Explorer</span>
+            </div>
+
+            <div class="cur-schema-card" style="margin-bottom:12px; background:rgba(0,0,0,0.015); border-style:dashed;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
+                        <span class="cur-kind-pill kind-${atom.kind}">${atom.kind}</span>
+                        <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; opacity:0.8;">${escapeHtml(atom.id)}</span>
+                        <span style="font-size:11px; opacity:0.5;">• v${raw.version || 3} (WideWeb)</span>
+                    </div>
+                    <div style="font-size:11px; opacity:0.6;">
+                        <span>Captured ${formatSchemaVal(raw.created_at || atom.date)}</span>
+                        ${raw.updated_at ? ` • <span>Updated ${formatSchemaVal(raw.updated_at)}</span>` : ''}
+                    </div>
+                </div>
             </div>
 
             <div class="cur-schema-card">
-                <div class="cur-schema-title">Tier 1: System Envelope</div>
-                <div class="cur-schema-row"><span>Atom ID</span><span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(atom.id)}</span></div>
-                <div class="cur-schema-row"><span>Kind</span><span class="cur-kind-pill kind-${atom.kind}">${atom.kind}</span></div>
-                <div class="cur-schema-row"><span>Version</span><span style="font-family:'JetBrains Mono', monospace;">v${raw.version || 2} (OpenCurate)</span></div>
-                <div class="cur-schema-row"><span>Schema Spec</span>${formatSchemaVal(raw['$schema'] || 'https://raw.githubusercontent.com/dn0c/wideweb/main/schema/atom.schema.json', true, true)}</div>
-                <div class="cur-schema-row"><span>Captured Date</span>${formatSchemaVal(raw.created_at || atom.date)}</div>
-                <div class="cur-schema-row"><span>Updated Date</span>${formatSchemaVal(raw.updated_at)}</div>
-            </div>
-
-            <div class="cur-schema-card">
-                <div class="cur-schema-title">Tier 2: Provenance Layer</div>
-                <div class="cur-schema-row"><span>Author / Creator</span>${formatSchemaVal(atom.author || prov.author)}</div>
-                <div class="cur-schema-row"><span>Publisher / Site</span>${formatSchemaVal(siteName || prov.site_name)}</div>
-                <div class="cur-schema-row"><span>Favicon</span>${favDisplay}</div>
-                <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
-                <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
-                <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
-            </div>
-
-            <div class="cur-schema-card">
-                <div class="cur-schema-title">Tier 3: Curation Layer</div>
+                <div class="cur-schema-title">Tier 1: Curation Layer</div>
                 <div class="cur-schema-row"><span>Curated Title</span>${formatSchemaVal(atom.title)}</div>
                 <div class="cur-schema-row"><span>Visibility</span><span class="cur-vis-badge">${escapeHtml(cur.visibility || 'public')}</span></div>
                 <div class="cur-schema-row"><span>Favorite</span>${formatSchemaVal(Boolean(cur.favorite))}</div>
@@ -1339,30 +1335,40 @@ html[data-theme="dark"] .markdown-body code {
             </div>
 
             <div class="cur-schema-card">
-                <div class="cur-schema-title">Tier 4: Payload Layer</div>
+                <div class="cur-schema-title">Tier 2: Source Layer</div>
+                <div class="cur-schema-row"><span>Author / Creator</span>${formatSchemaVal(atom.author || prov.author)}</div>
+                <div class="cur-schema-row"><span>Publisher / Site</span>${formatSchemaVal(siteName || prov.site_name)}</div>
+                <div class="cur-schema-row"><span>Favicon</span>${favDisplay}</div>
+                <div class="cur-schema-row"><span>Source Title</span>${formatSchemaVal(prov.source_title)}</div>
+                <div class="cur-schema-row"><span>Source URL</span>${formatSchemaVal(atom.source_url || prov.source_url, false, true)}</div>
+                <div class="cur-schema-row"><span>Published Date</span>${formatSchemaVal(prov.published_at || (atom.metadata && atom.metadata.published_at))}</div>
+            </div>
+
+            <div class="cur-schema-card">
+                <div class="cur-schema-title">Tier 3: Content Layer</div>
                 <div class="cur-schema-row"><span>Alt Text</span>${altTextVal ? `“${escapeHtml(altTextVal)}”` : formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>Cover File</span>${formatSchemaVal(coverPayload.file || (atom.cover_url ? 'cover.jpg' : null), true)}</div>
+                <div class="cur-schema-row"><span>Cover File</span>${formatSchemaVal(coverContent.file || (atom.cover_url ? 'cover.jpg' : null), true)}</div>
                 <div class="cur-schema-row"><span>Dimensions</span>${formatSchemaVal(dims)}</div>
                 <div class="cur-schema-row"><span>Aspect Ratio</span>${formatSchemaVal(ratio)}</div>
-                <div class="cur-schema-row"><span>Format / MIME</span>${formatSchemaVal(coverPayload.mime_type || (atom.kind === 'image' ? 'image/jpeg' : null), true)}</div>
+                <div class="cur-schema-row"><span>Format / MIME</span>${formatSchemaVal(coverContent.mime_type || (atom.kind === 'image' ? 'image/jpeg' : null), true)}</div>
                 <div class="cur-schema-row"><span>Blurhash</span>${formatSchemaVal(blur, true)}</div>
                 <div class="cur-schema-row"><span>Palette</span>${paletteHtml || formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverPayload.hash, true)}</div>
+                <div class="cur-schema-row"><span>SHA-256 Hash</span>${formatSchemaVal(coverContent.hash, true)}</div>
                 <div class="cur-schema-row"><span>Word Count</span>${wordCount ? `${wordCount} words` : formatSchemaVal(null)}</div>
-                <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((raw.payload && raw.payload.text && raw.payload.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
-                <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.provider)}</div>
-                <div class="cur-schema-row"><span>Embed URL</span>${formatSchemaVal(raw.payload && raw.payload.video && raw.payload.video.embed_url, true, true)}</div>
+                <div class="cur-schema-row"><span>Text File</span>${formatSchemaVal((content.text && content.text.file) || (atom.kind === 'note' ? 'note.md' : null), true)}</div>
+                <div class="cur-schema-row"><span>Video Provider</span>${formatSchemaVal(content.video && content.video.provider)}</div>
+                <div class="cur-schema-row"><span>Embed URL</span>${formatSchemaVal(content.video && content.video.embed_url, true, true)}</div>
                 <div class="cur-schema-row"><span>metadata_json</span>${metaOverflowHtml}</div>
             </div>
 
             <details style="margin-top:14px; border:1px solid rgba(0,0,0,0.06); border-radius:8px; overflow:hidden;">
                 <summary style="padding:10px 14px; font-size:12px; font-weight:600; cursor:pointer; background:rgba(0,0,0,0.02); display:flex; justify-content:space-between; user-select:none;">
                     <span>{ } Full <code>atom.json</code> Spec</span>
-                    <span style="font-size:11px; opacity:0.6;">inspect raw payload</span>
+                    <span style="font-size:11px; opacity:0.6;">inspect raw content</span>
                 </summary>
                 <div style="padding:12px; font-size:11px; font-family:'JetBrains Mono', monospace; background:rgba(0,0,0,0.01);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:10.5px; opacity:0.65;">OpenCurate Data Spec</span>
+                        <span style="font-size:10.5px; opacity:0.65;">WideWeb Data Spec</span>
                         ${atom.atom_url ? `<a href="${atom.atom_url}" target="_blank" rel="noopener" style="font-size:11px; text-decoration:underline; color:inherit;">↗ Open direct atom.json</a>` : ''}
                     </div>
                     <pre style="margin:0; padding:0; overflow:auto; max-height:260px;"><code id="curRawJsonCode">${escapeHtml(JSON.stringify(raw && Object.keys(raw).length ? raw : atom, null, 2))}</code></pre>
