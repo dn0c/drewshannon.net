@@ -32,9 +32,16 @@
                     <button class="cur-tab-btn" data-filter="article">📖 Articles <span class="cur-badge" id="badge-article"></span></button>
                     <button class="cur-tab-btn" data-filter="note">📝 Notes <span class="cur-badge" id="badge-note"></span></button>
                 </div>
-                <div class="curation-search-box">
-                    <span class="cur-search-icon">🔍</span>
-                    <input type="text" id="curationSearch" placeholder="Search 13,700+ items by title, author, tag, note... (Press /)" autocomplete="off">
+                <div class="curation-controls-right">
+                    <div class="curation-sort-tabs" id="curationSortTabs">
+                        <button class="cur-sort-btn active" data-sort="random" title="Random serendipity order">🔀 Random</button>
+                        <button class="cur-sort-btn" data-sort="recent" title="Chronological order (newest first)">🕒 Recent</button>
+                        <button class="cur-shuffle-btn" id="curShuffleBtn" title="Reshuffle random order">↺ Reshuffle</button>
+                    </div>
+                    <div class="curation-search-box">
+                        <span class="cur-search-icon">🔍</span>
+                        <input type="text" id="curationSearch" placeholder="Search 13,700+ items by title, author, tag, note... (Press /)" autocomplete="off">
+                    </div>
                 </div>
             </div>
 
@@ -162,6 +169,99 @@ html[data-theme="dark"] .cur-tab-btn.active {
     font-size: 11px;
     opacity: 0.75;
     font-family: 'JetBrains Mono', monospace;
+}
+
+.curation-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+.curation-sort-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+}
+
+html[data-theme="dark"] .curation-sort-tabs {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cur-sort-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-secondary-text, #666);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.cur-sort-btn:hover {
+    color: var(--color-primary-text, #111);
+}
+
+html[data-theme="dark"] .cur-sort-btn:hover {
+    color: #fbf7f0;
+}
+
+.cur-sort-btn.active {
+    background: var(--color-card-bg, #ffffff);
+    color: var(--color-primary-text, #111);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="dark"] .cur-sort-btn.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fbf7f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.cur-shuffle-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-secondary-text, #666);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-left: 1px solid var(--border-color, rgba(0,0,0,0.1));
+    margin-left: 2px;
+    white-space: nowrap;
+}
+
+html[data-theme="dark"] .cur-shuffle-btn {
+    border-left-color: rgba(255, 255, 255, 0.12);
+}
+
+.cur-shuffle-btn:hover {
+    color: var(--color-primary-text, #111);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="dark"] .cur-shuffle-btn:hover {
+    color: #fbf7f0;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .curation-search-box {
@@ -964,9 +1064,52 @@ html[data-theme="dark"] .markdown-body code {
     let searchQuery = '';
     let counts = { all: 0, video: 0, quote: 0, image: 0, bookmark: 0, article: 0, note: 0 };
     let fullCatalogLoaded = false;
+    let activeSort = 'random'; // 'random' (default UI) or 'recent'
+    let shuffledAtoms = [];
 
     window.currentReaderAtomId = null;
     window.currentMetaAtomId = null;
+
+    // Check optional sort parameter from URL (?sort=recent or ?sort=random)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('sort') === 'recent') {
+            activeSort = 'recent';
+        }
+    } catch(e) {}
+
+    function updateSortUI() {
+        document.querySelectorAll('.cur-sort-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.sort === activeSort);
+        });
+        const shuffleBtn = document.getElementById('curShuffleBtn');
+        if (shuffleBtn) {
+            shuffleBtn.style.display = activeSort === 'random' ? 'inline-flex' : 'none';
+        }
+    }
+
+    function shuffleArray(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+        }
+        return a;
+    }
+
+    function reshuffle(scrollUp = false) {
+        if (!allAtoms || allAtoms.length === 0) return;
+        shuffledAtoms = shuffleArray(allAtoms);
+        applyFilters(true);
+        if (scrollUp) {
+            const header = document.querySelector('.curation-header');
+            if (header) {
+                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
 
     function updateCountsAndBadges(atoms) {
         counts = { all: atoms.length, video: 0, quote: 0, image: 0, bookmark: 0, article: 0, note: 0 };
@@ -986,36 +1129,46 @@ html[data-theme="dark"] .markdown-body code {
 
     async function loadCurationData() {
         const statusEl = document.getElementById('curationStatus');
+        updateSortUI();
 
-        // Stage 0: Instant restore from client cache if available (0ms)
-        try {
-            const cached = localStorage.getItem('wideweb_garden_recent_v1');
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    allAtoms = parsed;
-                    updateCountsAndBadges(allAtoms);
-                    if (statusEl) statusEl.style.display = 'none';
-                    applyFilters();
+        // Stage 0: Instant restore from client cache if available (0ms) - only if user specifically requested 'recent'
+        if (activeSort === 'recent') {
+            try {
+                const cached = localStorage.getItem('wideweb_garden_recent_v1');
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        allAtoms = parsed;
+                        updateCountsAndBadges(allAtoms);
+                        if (statusEl) statusEl.style.display = 'none';
+                        applyFilters();
+                    }
                 }
-            }
-        } catch (e) {}
+            } catch (e) {}
+        }
 
         // Stage 1: Quick fetch of recent batch (~32 KB gzipped, renders in ~50ms)
         fetch(GCS_RECENT_URL)
             .then(r => r.ok ? r.json() : null)
             .then(recentItems => {
-                if (recentItems && recentItems.length && !fullCatalogLoaded) {
+                if (recentItems && recentItems.length) {
                     try { localStorage.setItem('wideweb_garden_recent_v1', JSON.stringify(recentItems)); } catch(e){}
-                    allAtoms = recentItems;
-                    updateCountsAndBadges(allAtoms);
-                    if (statusEl) statusEl.style.display = 'none';
-                    applyFilters();
+                    if (!fullCatalogLoaded) {
+                        if (activeSort === 'recent') {
+                            allAtoms = recentItems;
+                            updateCountsAndBadges(allAtoms);
+                            if (statusEl) statusEl.style.display = 'none';
+                            applyFilters();
+                        } else if (allAtoms.length === 0) {
+                            // Seed counts while full catalog streams in
+                            updateCountsAndBadges(recentItems);
+                        }
+                    }
                 }
             })
             .catch(() => {});
 
-        // Stage 2: Background stream of full public catalog (~5 MB gzipped, complete with raw schemas)
+        // Stage 2: Stream full public catalog (~3 MB gzipped, complete with all public atoms)
         try {
             const resp = await fetch(GCS_MANIFEST_URL);
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -1023,19 +1176,44 @@ html[data-theme="dark"] .markdown-body code {
             fullCatalogLoaded = true;
             allAtoms = fullItems;
 
+            if (activeSort === 'random') {
+                shuffledAtoms = shuffleArray(allAtoms);
+            }
+
             updateCountsAndBadges(allAtoms);
             if (statusEl) statusEl.style.display = 'none';
-            applyFilters();
+            applyFilters(true);
         } catch (err) {
-            if (allAtoms.length === 0 && statusEl) {
-                statusEl.innerHTML = `⚠️ Error loading curation library: ${err.message}. Please check back shortly.`;
+            if (allAtoms.length === 0) {
+                // Fallback to recent batch if full catalog fails to load
+                try {
+                    const cached = localStorage.getItem('wideweb_garden_recent_v1');
+                    if (cached) {
+                        const parsed = JSON.parse(cached);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            allAtoms = parsed;
+                            shuffledAtoms = shuffleArray(allAtoms);
+                            updateCountsAndBadges(allAtoms);
+                            if (statusEl) statusEl.style.display = 'none';
+                            applyFilters(true);
+                            return;
+                        }
+                    }
+                } catch(e) {}
+                if (statusEl) {
+                    statusEl.innerHTML = `⚠️ Error loading curation library: ${err.message}. Please check back shortly.`;
+                }
             }
         }
     }
 
-    function applyFilters() {
+    function applyFilters(forceRerender = false) {
+        const sourcePool = (activeSort === 'random')
+            ? (shuffledAtoms.length ? shuffledAtoms : allAtoms)
+            : allAtoms;
+
         const q = searchQuery.toLowerCase();
-        filteredAtoms = allAtoms.filter(a => {
+        filteredAtoms = sourcePool.filter(a => {
             if (activeFilter !== 'all' && a.kind !== activeFilter) return false;
             if (q) {
                 const matchTitle = (a.title || '').toLowerCase().includes(q);
@@ -1051,8 +1229,8 @@ html[data-theme="dark"] .markdown-body code {
         const grid = document.getElementById('curationGrid');
         const footer = document.getElementById('curationFooter');
 
-        // If cards are already displayed on screen and no filter/search is active, don't re-render or shift scroll
-        if (grid && grid.children.length > 0 && !q && activeFilter === 'all') {
+        // If cards are already displayed on screen and no filter/search/sort change, don't re-render or shift scroll
+        if (!forceRerender && grid && grid.children.length > 0 && !q && activeFilter === 'all') {
             if (footer) footer.style.display = displayedCount < filteredAtoms.length ? 'block' : 'none';
             const loadBtn = document.getElementById('loadMoreBtn');
             if (loadBtn) {
@@ -1620,6 +1798,38 @@ html[data-theme="dark"] .markdown-body code {
             setTimeout(() => btn.textContent = orig, 1800);
         });
     };
+
+    // Sort Buttons
+    document.querySelectorAll('.cur-sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetSort = btn.dataset.sort;
+            if (targetSort === activeSort) {
+                // Clicking active Random reshuffles
+                if (targetSort === 'random') {
+                    reshuffle(true);
+                }
+                return;
+            }
+            activeSort = targetSort;
+            updateSortUI();
+            if (activeSort === 'random' && shuffledAtoms.length === 0 && allAtoms.length > 0) {
+                shuffledAtoms = shuffleArray(allAtoms);
+            }
+            applyFilters(true);
+        });
+    });
+
+    // Shuffle Button
+    const shuffleBtn = document.getElementById('curShuffleBtn');
+    if (shuffleBtn) {
+        shuffleBtn.addEventListener('click', () => {
+            if (activeSort !== 'random') {
+                activeSort = 'random';
+                updateSortUI();
+            }
+            reshuffle(true);
+        });
+    }
 
     // Filter Buttons
     document.querySelectorAll('.cur-tab-btn').forEach(btn => {
