@@ -1313,10 +1313,14 @@ html[data-theme="dark"] .markdown-body code {
             `).join('');
         }
 
-        const content = (raw && (raw.content || raw.payload)) || {};
-        const rawMeta = (raw && raw.metadata_json) || atom.metadata || {};
+        function renderSchemaExplorer(targetAtom) {
+            const raw = targetAtom.raw || {};
+            const prov = (raw && (raw.source || raw.provenance)) || {};
+            const cur = raw.curation || {};
+            const content = (raw && (raw.content || raw.payload)) || {};
+            const rawMeta = (raw && raw.metadata_json) || targetAtom.metadata || {};
 
-        const metaCardsHtml = `
+            return `
             <div class="cur-modal-meta-divider">
                 <span class="cur-modal-meta-label">WideWeb Schema Explorer</span>
             </div>
@@ -1324,12 +1328,12 @@ html[data-theme="dark"] .markdown-body code {
             <div class="cur-schema-card" style="margin-bottom:12px; background:rgba(0,0,0,0.015); border-style:dashed;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
-                        <span class="cur-kind-pill kind-${atom.kind}">${atom.kind}</span>
-                        <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; opacity:0.8;">${escapeHtml(atom.id)}</span>
+                        <span class="cur-kind-pill kind-${targetAtom.kind}">${targetAtom.kind}</span>
+                        <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; opacity:0.8;">${escapeHtml(targetAtom.id)}</span>
                         <span style="font-size:11px; opacity:0.5;">• v${raw.version || 3} (WideWeb)</span>
                     </div>
                     <div style="font-size:11px; opacity:0.6;">
-                        <span>Captured ${formatDynamicValue(raw.created_at || atom.date)}</span>
+                        <span>Captured ${formatDynamicValue(raw.created_at || targetAtom.date)}</span>
                         ${raw.updated_at ? ` • <span>Updated ${formatDynamicValue(raw.updated_at)}</span>` : ''}
                     </div>
                 </div>
@@ -1364,12 +1368,15 @@ html[data-theme="dark"] .markdown-body code {
                 <div style="padding:12px; font-size:11px; font-family:'JetBrains Mono', monospace; background:rgba(0,0,0,0.01);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <span style="font-size:10.5px; opacity:0.65;">WideWeb Data Spec</span>
-                        ${atom.atom_url ? `<a href="${atom.atom_url}" target="_blank" rel="noopener" style="font-size:11px; text-decoration:underline; color:inherit;">↗ Open direct atom.json</a>` : ''}
+                        ${targetAtom.atom_url ? `<a href="${targetAtom.atom_url}" target="_blank" rel="noopener" style="font-size:11px; text-decoration:underline; color:inherit;">↗ Open direct atom.json</a>` : ''}
                     </div>
-                    <pre style="margin:0; padding:0; overflow:auto; max-height:260px;"><code id="curRawJsonCode">${escapeHtml(JSON.stringify(raw && Object.keys(raw).length ? raw : atom, null, 2))}</code></pre>
+                    <pre style="margin:0; padding:0; overflow:auto; max-height:260px;"><code id="curRawJsonCode">${escapeHtml(JSON.stringify(raw && Object.keys(raw).length ? raw : targetAtom, null, 2))}</code></pre>
                 </div>
             </details>
-        `;
+            `;
+        }
+
+        const metaCardsHtml = `<div id="curSchemaContainer">${renderSchemaExplorer(atom)}</div>`;
 
         let bodyHtml = '';
 
@@ -1586,9 +1593,14 @@ html[data-theme="dark"] .markdown-body code {
                     atom.raw = rawJson;
                     atom._loadingRaw = false;
                     if (window.currentMetaAtomId === atom.id) {
-                        const codeEl = document.getElementById('curRawJsonCode');
-                        if (codeEl) {
-                            codeEl.textContent = JSON.stringify(rawJson, null, 2);
+                        const container = document.getElementById('curSchemaContainer');
+                        if (container) {
+                            container.innerHTML = renderSchemaExplorer(atom);
+                        } else {
+                            const codeEl = document.getElementById('curRawJsonCode');
+                            if (codeEl) {
+                                codeEl.textContent = JSON.stringify(rawJson, null, 2);
+                            }
                         }
                     }
                 })
