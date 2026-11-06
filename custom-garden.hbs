@@ -1584,7 +1584,8 @@ html[data-theme="dark"] .markdown-body code {
         // Lazy-load full atom.json schema if not already in memory
         if ((!atom.raw || Object.keys(atom.raw).length === 0) && atom.atom_url && !atom._loadingRaw) {
             atom._loadingRaw = true;
-            fetch(atom.atom_url)
+            const fetchUrl = atom.atom_url.includes('?') ? atom.atom_url : `${atom.atom_url}?v=${Date.now()}`;
+            fetch(fetchUrl)
                 .then(r => {
                     if (!r.ok) throw new Error('HTTP ' + r.status);
                     return r.json();
