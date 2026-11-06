@@ -33,6 +33,16 @@
     color: var(--primary-text-color);
 }
 
+.page-template .single-title {
+    font-family: var(--font-sans);
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-right: -0.18em;
+}
+
 .single-excerpt {
     margin-top: 2rem;
     font-size: 1.8rem;
@@ -167,6 +177,12 @@
 
     .single-title {
         font-size: 2.6rem;
+    }
+
+    .page-template .single-title {
+        font-size: 1.8rem;
+        letter-spacing: 0.14em;
+        margin-right: -0.14em;
     }
 
     .single-excerpt {
