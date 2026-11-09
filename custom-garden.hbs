@@ -99,7 +99,7 @@
 
 <style>
 /* ==========================================================================
-   WideWeb Curation Digital Garden Styles
+   Webtack Curation Digital Garden Styles
    ========================================================================== */
 .curation-hub {
     max-width: 1380px;
@@ -1134,7 +1134,7 @@ html[data-theme="dark"] .markdown-body code {
         // Stage 0: Instant restore from client cache if available (0ms) - only if user specifically requested 'recent'
         if (activeSort === 'recent') {
             try {
-                const cached = localStorage.getItem('wideweb_garden_recent_v1');
+                const cached = localStorage.getItem('webtack_garden_recent_v1') || localStorage.getItem('wideweb_garden_recent_v1');
                 if (cached) {
                     const parsed = JSON.parse(cached);
                     if (Array.isArray(parsed) && parsed.length > 0) {
@@ -1152,7 +1152,7 @@ html[data-theme="dark"] .markdown-body code {
             .then(r => r.ok ? r.json() : null)
             .then(recentItems => {
                 if (recentItems && recentItems.length) {
-                    try { localStorage.setItem('wideweb_garden_recent_v1', JSON.stringify(recentItems)); } catch(e){}
+                    try { localStorage.setItem('webtack_garden_recent_v1', JSON.stringify(recentItems)); } catch(e){}
                     if (!fullCatalogLoaded) {
                         if (activeSort === 'recent') {
                             allAtoms = recentItems;
@@ -1187,7 +1187,7 @@ html[data-theme="dark"] .markdown-body code {
             if (allAtoms.length === 0) {
                 // Fallback to recent batch if full catalog fails to load
                 try {
-                    const cached = localStorage.getItem('wideweb_garden_recent_v1');
+                    const cached = localStorage.getItem('webtack_garden_recent_v1') || localStorage.getItem('wideweb_garden_recent_v1');
                     if (cached) {
                         const parsed = JSON.parse(cached);
                         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -1500,7 +1500,7 @@ html[data-theme="dark"] .markdown-body code {
 
             return `
             <div class="cur-modal-meta-divider">
-                <span class="cur-modal-meta-label">WideWeb Schema Explorer</span>
+                <span class="cur-modal-meta-label">Webtack Schema Explorer</span>
             </div>
 
             <div class="cur-schema-card" style="margin-bottom:12px; background:rgba(0,0,0,0.015); border-style:dashed;">
@@ -1508,7 +1508,7 @@ html[data-theme="dark"] .markdown-body code {
                     <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
                         <span class="cur-kind-pill kind-${targetAtom.kind}">${targetAtom.kind}</span>
                         <span style="font-family:'JetBrains Mono', monospace; font-size:11.5px; opacity:0.8;">${escapeHtml(targetAtom.id)}</span>
-                        <span style="font-size:11px; opacity:0.5;">• v${raw.version || 3} (WideWeb)</span>
+                        <span style="font-size:11px; opacity:0.5;">• v${raw.version || 3} (Webtack)</span>
                     </div>
                     <div style="font-size:11px; opacity:0.6;">
                         <span>Captured ${formatDynamicValue(raw.created_at || targetAtom.date)}</span>
@@ -1545,7 +1545,7 @@ html[data-theme="dark"] .markdown-body code {
                 </summary>
                 <div style="padding:12px; font-size:11px; font-family:'JetBrains Mono', monospace; background:rgba(0,0,0,0.01);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:10.5px; opacity:0.65;">WideWeb Data Spec</span>
+                        <span style="font-size:10.5px; opacity:0.65;">Webtack Data Spec</span>
                         ${targetAtom.atom_url ? `<a href="${targetAtom.atom_url}" target="_blank" rel="noopener" style="font-size:11px; text-decoration:underline; color:inherit;">↗ Open direct atom.json</a>` : ''}
                     </div>
                     <pre style="margin:0; padding:0; overflow:auto; max-height:260px;"><code id="curRawJsonCode">${escapeHtml(JSON.stringify(raw && Object.keys(raw).length ? raw : targetAtom, null, 2))}</code></pre>
