@@ -111,10 +111,6 @@
                 "type": "boolean",
                 "default": true,
                 "group": "post"
-            },
-            "arena_url": {
-                "type": "text",
-                "default": "https://www.are.na/drewshannon"
             }
         }
     },
