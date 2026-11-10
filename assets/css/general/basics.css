@@ -56,6 +56,33 @@
     --navbar-height: 80px;
     --content-font-size: 1.7rem;
     --header-spacing: 6vmin;
+
+    /* Content & Canvas layout widths */
+    --content-width: 720px;
+    --container-width: 1200px;
+}
+
+/* Widen content & containers responsively on larger displays */
+@media (min-width: 1024px) {
+    :root {
+        --content-width: 840px;
+        --container-width: 1260px;
+    }
+}
+
+@media (min-width: 1280px) {
+    :root {
+        --content-width: 900px;
+        --container-width: 1340px;
+    }
+}
+
+@media (min-width: 1600px) {
+    :root {
+        --content-width: 980px;
+        --container-width: 1420px;
+        --content-font-size: 1.8rem;
+    }
 }
 
 /* Dark Mode: Warm archival espresso theme */

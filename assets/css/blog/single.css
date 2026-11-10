@@ -193,3 +193,13 @@
         margin-top: 3rem;
     }
 }
+
+@media (min-width: 1280px) {
+    .single-title {
+        font-size: 4.6rem;
+    }
+
+    .single-excerpt {
+        font-size: 2rem;
+    }
+}
